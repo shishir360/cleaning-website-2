@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Netlify Functions directory
+[functions]
+  directory = "netlify/functions"
+
+# Required environment variables — set in Netlify Dashboard → Site → Environment Variables
+# GEMINI_API_KEY = "your-google-ai-studio-key-here"
+
 # SPA routing — all routes go to index.html
 [[redirects]]
   from = "/*"

@@ -1,15 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, X, Send, Sparkles, Loader2, Mic, MicOff, Volume2, VolumeX, CheckCircle2 } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 
-// Initialize the Gemini API
-const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+// ─── Gemini REST API ───────────────────────────────────────────────────────────
+// In production (Netlify): calls /.netlify/functions/chat (no key exposed)
+// In local dev: uses VITE_GEMINI_API_KEY directly to Gemini REST API
+const CLIENT_API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY as string | undefined;
+const IS_NETLIFY = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const GEMINI_DIRECT_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
+type GeminiPart =
+  | { text: string }
+  | { functionCall: { name: string; args: Record<string, unknown> } }
+  | { functionResponse: { name: string; response: Record<string, unknown> } };
+
+type GeminiContent = {
+  role: 'user' | 'model';
+  parts: GeminiPart[];
+};
+
+type GeminiResponse = {
+  candidates?: Array<{
+    content: GeminiContent;
+    finishReason?: string;
+  }>;
+  error?: { message: string; code?: number };
+};
+
+// ─── System Prompt ─────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are a helpful, professional, and friendly virtual assistant for Lumina Clean Services, a premium cleaning company serving the New York area.
-Your goal is to answer questions about cleaning services, pricing, and availability. 
-You can ALSO book appointments using the book_appointment tool. To book an appointment, you MUST ask the user for their Name, Phone number, and Desired Date/Time. Do not assume any details. Once you have all 3, call the book_appointment tool.
+Your goal is to answer questions about cleaning services, pricing, and availability.
+You can ALSO book appointments using the book_appointment function. To book an appointment, you MUST ask the user for their Name, Phone number, and Desired Date/Time. Do not assume any details. Once you have all 3, call the book_appointment function.
 
 ### Service FAQs:
 - Standard Cleaning: Ideal for routine upkeep. Covers dusting, vacuuming, mopping, bathroom sanitation, and kitchen surface wiping. Starts at $150.
@@ -20,131 +41,144 @@ You can ALSO book appointments using the book_appointment tool. To book an appoi
 
 CRITICAL INSTRUCTIONS:
 - Keep your answers brief, informative, and courteous.
-- DO NOT use markdown like asterisks, bolding, or bullet points if possible because your text will be read aloud by a human-like voice assistant. Speak in conversational, easy-to-hear sentences.
+- Do not use markdown like asterisks, bolding, or bullet points. Speak in conversational, easy-to-hear sentences.
 - If the user asks a question not covered by the FAQ, politely state that you can have a human representative contact them via phone, and ask for their number.`;
 
-const bookingTool = {
-  functionDeclarations: [
-    {
-      name: "book_appointment",
-      description: "Books a cleaning appointment for the customer.",
-      parameters: {
-        type: "OBJECT",
-        properties: {
-          customer_name: { type: "STRING", description: "Customer's full name" },
-          phone: { type: "STRING", description: "Customer's contact phone number" },
-          datetime: { type: "STRING", description: "The date and time they want the cleaning" },
-          service_type: { type: "STRING", description: "Type of clean (e.g. standard, deep, move-in)" }
+const TOOLS = [
+  {
+    function_declarations: [
+      {
+        name: 'book_appointment',
+        description: 'Books a cleaning appointment for the customer.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            customer_name: { type: 'STRING', description: "Customer's full name" },
+            phone: { type: 'STRING', description: "Customer's contact phone number" },
+            datetime: { type: 'STRING', description: 'The date and time they want the cleaning' },
+            service_type: { type: 'STRING', description: 'Type of clean (e.g. standard, deep, move-in)' },
+          },
+          required: ['customer_name', 'phone', 'datetime'],
         },
-        required: ["customer_name", "phone", "datetime"]
-      }
-    }
-  ]
-};
+      },
+    ],
+  },
+];
 
-type Message = {
+// ─── Core API call ─────────────────────────────────────────────────────────────
+async function callGemini(
+  history: GeminiContent[],
+  message?: string,
+  functionResponse?: { name: string; response: Record<string, unknown> }
+): Promise<GeminiResponse> {
+  // Use Netlify proxy on production, or direct API when running locally with key
+  const useProxy = IS_NETLIFY || !CLIENT_API_KEY;
+
+  if (useProxy) {
+    const res = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ history, message, functionResponse }),
+    });
+    return res.json();
+  }
+
+  // Local dev: call Gemini REST API directly
+  const contents: GeminiContent[] = [
+    ...history,
+    ...(message ? [{ role: 'user' as const, parts: [{ text: message }] }] : []),
+    ...(functionResponse
+      ? [{ role: 'user' as const, parts: [{ functionResponse }] }]
+      : []),
+  ];
+
+  const res = await fetch(`${GEMINI_DIRECT_URL}?key=${CLIENT_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents,
+      tools: TOOLS,
+    }),
+  });
+  return res.json();
+}
+
+// ─── helpers ───────────────────────────────────────────────────────────────────
+const SpeechRecognition =
+  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+type UIMessage = {
   id: string;
   sender: 'ai' | 'user' | 'system';
   text: string;
 };
 
-// Web Speech API interfaces
-const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
+// ─── Component ─────────────────────────────────────────────────────────────────
 export default function FloatingChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', sender: 'ai', text: 'Hello! I am your Lumina Virtual Assistant. I can answer your questions or help you book an appointment today. How can I assist you?' },
+  const [messages, setMessages] = useState<UIMessage[]>([
+    {
+      id: '1',
+      sender: 'ai',
+      text: 'Hello! I am your Lumina Virtual Assistant. I can answer your questions or help you book an appointment today. How can I assist you?',
+    },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // KEY FIX: Use ref for chat session — avoids React async state update delay
-  // When user sends first message, useState would still be null; useRef is instant.
-  const chatSessionRef = useRef<any>(null);
-  
-  // Voice states
+
+  // Multi-turn Gemini history (separate from UI messages)
+  const geminiHistoryRef = useRef<GeminiContent[]>([]);
+
+  // Voice
   const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [isSpeechAvailable, setIsSpeechAvailable] = useState(false);
+  const handleSendRef = useRef<((txt?: string) => void) | null>(null);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  // Set up speech recognition once on mount
+  // Init speech recognition
   useEffect(() => {
-    if (SpeechRecognition) {
-      setIsSpeechAvailable(true);
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    }
+    if (!SpeechRecognition) return;
+    setIsSpeechAvailable(true);
+    const rec = new SpeechRecognition();
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.lang = 'en-US';
+    rec.onerror = () => setIsListening(false);
+    rec.onend = () => setIsListening(false);
+    rec.onresult = (event: any) => {
+      const text = event.results[0][0].transcript;
+      setIsListening(false);
+      if (text.trim() && handleSendRef.current) handleSendRef.current(text);
+    };
+    recognitionRef.current = rec;
   }, []);
-  
-  // Keep a always-fresh ref to handleSendMessage for speech recognition callback
-  const handleSendMessageRef = useRef<((txt: string) => void) | null>(null);
-  
-  // Wire up speech recognition result to always-fresh ref
-  useEffect(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.onresult = (event: any) => {
-        const text = event.results[0][0].transcript;
-        setInputValue('');
-        setIsListening(false);
-        if (text.trim().length > 0 && handleSendMessageRef.current) {
-          handleSendMessageRef.current(text);
-        }
-      };
-    }
-  }, [isSpeechAvailable]);
 
-  // Initialize chat session immediately when chatbot opens
+  // Greet with voice on open
   useEffect(() => {
-    if (isOpen && ai && !chatSessionRef.current) {
-      try {
-        chatSessionRef.current = ai.chats.create({
-          model: 'gemini-2.0-flash',
-          config: {
-            systemInstruction: SYSTEM_PROMPT,
-            tools: [bookingTool as any],
-          }
-        });
-        
-        // Greet with voice when first opened
-        if (isVoiceOutputEnabled && messages.length === 1) {
-          speakText(messages[0].text);
-        }
-      } catch (err) {
-        console.error("Failed to init chat session", err);
-      }
+    if (isOpen && isVoiceOutputEnabled && messages.length === 1) {
+      speakText(messages[0].text);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  // ── TTS ────────────────────────────────────────────────────────────────────
   const speakText = (text: string) => {
     if (!isVoiceOutputEnabled || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Natural')) || voices[0];
-    if (preferredVoice) utterance.voice = preferredVoice;
+    const preferred =
+      voices.find((v) => v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Natural')) ||
+      voices[0];
+    if (preferred) utterance.voice = preferred;
     utterance.rate = 1.0;
     utterance.pitch = 1.1;
     window.speechSynthesis.speak(utterance);
@@ -163,108 +197,114 @@ export default function FloatingChatbot() {
   };
 
   const toggleVoiceOutput = () => {
-    setIsVoiceOutputEnabled(prev => {
+    setIsVoiceOutputEnabled((prev) => {
       if (prev) window.speechSynthesis.cancel();
       return !prev;
     });
   };
 
-  const handleSendMessage = async (textOveride?: string) => {
-    const messageToSend = textOveride || inputValue;
-    if (!messageToSend.trim()) return;
-    
-    window.speechSynthesis.cancel();
-    if (!textOveride) setInputValue('');
-    
-    const newUserMessage: Message = { id: Date.now().toString(), sender: 'user', text: messageToSend.trim() };
-    setMessages((prev) => [...prev, newUserMessage]);
-    
-    // If session not yet created (edge case: user typed before useEffect ran), create it now
-    if (ai && !chatSessionRef.current) {
-      try {
-        chatSessionRef.current = ai.chats.create({
-          model: 'gemini-2.0-flash',
-          config: {
-            systemInstruction: SYSTEM_PROMPT,
-            tools: [bookingTool as any],
-          }
-        });
-      } catch (err) {
-        console.error("Failed to init chat session on demand", err);
-      }
-    }
-    
-    if (!ai || !chatSessionRef.current) {
-      setMessages((prev) => [...prev, { 
-        id: Date.now().toString(), 
-        sender: 'ai', 
-        text: 'Sorry, I am currently offline or missing the API key configuration. Please call us at (212) 555-0198.' 
-      }]);
-      return;
-    }
+  // ── Send message ───────────────────────────────────────────────────────────
+  const handleSendMessage = async (textOverride?: string) => {
+    const messageToSend = textOverride ?? inputValue;
+    if (!messageToSend.trim() || isLoading) return;
 
+    window.speechSynthesis.cancel();
+    if (!textOverride) setInputValue('');
+
+    const userMsg: UIMessage = { id: Date.now().toString(), sender: 'user', text: messageToSend.trim() };
+    setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
-    
+
     try {
-      let response = await chatSessionRef.current.sendMessage({ message: messageToSend.trim() });
-      
-      // Handle Function Calling
-      if (response.functionCalls && response.functionCalls.length > 0) {
-        const call = response.functionCalls[0];
-        
-        if (call.name === "book_appointment") {
-          const args = call.args;
-          const bookingMsg: Message = {
+      const data = await callGemini(geminiHistoryRef.current, messageToSend.trim());
+
+      if (data.error) {
+        throw new Error(data.error.message || 'Gemini API returned an error');
+      }
+
+      const candidate = data.candidates?.[0];
+      if (!candidate) throw new Error('No response received from AI');
+
+      const parts = candidate.content?.parts ?? [];
+
+      // Check for function call
+      const funcCallPart = parts.find((p): p is { functionCall: { name: string; args: Record<string, unknown> } } =>
+        'functionCall' in p
+      );
+
+      if (funcCallPart) {
+        const { name, args } = funcCallPart.functionCall;
+
+        if (name === 'book_appointment') {
+          // Add model turn to history
+          geminiHistoryRef.current = [
+            ...geminiHistoryRef.current,
+            { role: 'user', parts: [{ text: messageToSend.trim() }] },
+            { role: 'model', parts: [{ functionCall: { name, args } }] },
+          ];
+
+          // Show booking confirmation in UI
+          const confirmationId = 'LUM-' + Math.floor(Math.random() * 10000);
+          const bookingMsg: UIMessage = {
             id: Date.now().toString() + '-sys',
             sender: 'system',
-            text: `📅 Booking Confirmed for ${args.customer_name} on ${args.datetime} (${args.service_type || 'Cleaning'})! We will contact ${args.phone} shortly.`
+            text: `📅 Booking Confirmed for ${args.customer_name} on ${args.datetime} (${args.service_type || 'Cleaning'})! We will contact ${args.phone} shortly. Ref: ${confirmationId}`,
           };
-          setMessages(prev => [...prev, bookingMsg]);
-          
-          // Send tool result back to model
-          response = await chatSessionRef.current.sendMessage({
-            message: [{
-              functionResponse: {
-                name: 'book_appointment',
-                response: { status: 'success', confirmation_id: 'LUM-' + Math.floor(Math.random() * 10000) }
-              }
-            }]
-          });
+          setMessages((prev) => [...prev, bookingMsg]);
+
+          // Send function result back to model
+          const funcResult = { name: 'book_appointment', response: { status: 'success', confirmation_id: confirmationId } };
+          const followUp = await callGemini(geminiHistoryRef.current, undefined, funcResult);
+
+          if (followUp.error) throw new Error(followUp.error.message);
+
+          const followUpText = followUp.candidates?.[0]?.content?.parts?.find(
+            (p): p is { text: string } => 'text' in p
+          )?.text;
+
+          if (followUpText) {
+            // Add function response + model reply to history
+            geminiHistoryRef.current = [
+              ...geminiHistoryRef.current,
+              { role: 'user', parts: [{ functionResponse: funcResult }] },
+              { role: 'model', parts: [{ text: followUpText }] },
+            ];
+            const aiReply: UIMessage = { id: Date.now().toString() + '-ai', sender: 'ai', text: followUpText };
+            setMessages((prev) => [...prev, aiReply]);
+            speakText(followUpText);
+          }
         }
+      } else {
+        // Normal text response
+        const textPart = parts.find((p): p is { text: string } => 'text' in p);
+        const replyText = textPart?.text ?? 'I did not get a clear response. Please try again.';
+
+        // Update history
+        geminiHistoryRef.current = [
+          ...geminiHistoryRef.current,
+          { role: 'user', parts: [{ text: messageToSend.trim() }] },
+          { role: 'model', parts: [{ text: replyText }] },
+        ];
+
+        const aiReply: UIMessage = { id: Date.now().toString(), sender: 'ai', text: replyText };
+        setMessages((prev) => [...prev, aiReply]);
+        speakText(replyText);
       }
-      
-      if (response.text) {
-        const newAiMessage: Message = { 
-          id: Date.now().toString(), 
-          sender: 'ai', 
-          text: response.text 
-        };
-        setMessages((prev) => [...prev, newAiMessage]);
-        speakText(response.text);
-      }
-      
-    } catch (error: any) {
-      console.error('Chat AI Error:', error);
-      const errMsg = error?.message?.includes('API_KEY_INVALID') 
-        ? 'The AI API key is invalid. Please contact support.'
-        : 'Sorry, I encountered an error connecting to the AI system. Please try again later.';
-      setMessages((prev) => [...prev, { 
-        id: Date.now().toString(), 
-        sender: 'ai', 
-        text: errMsg
-      }]);
+    } catch (err: any) {
+      console.error('Chatbot error:', err);
+      const errText =
+        err?.message?.includes('API_KEY_INVALID') || err?.message?.includes('API key')
+          ? '⚠️ AI service is not configured. Please contact us at (212) 555-0198 to book.'
+          : `Sorry, I encountered an error: ${err?.message ?? 'Unknown error'}. Please try again or call (212) 555-0198.`;
+      setMessages((prev) => [...prev, { id: Date.now().toString(), sender: 'ai', text: errText }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Always keep ref in sync with latest handler (for speech)
-  handleSendMessageRef.current = handleSendMessage;
+  handleSendRef.current = handleSendMessage;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSendMessage();
-  };
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
       <AnimatePresence>
@@ -278,7 +318,7 @@ export default function FloatingChatbot() {
           >
             {/* Header */}
             <div className="bg-primary p-4 text-white flex items-center justify-between relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-black opacity-50"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-black opacity-50" />
               <div className="relative z-[101] flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
                   <Sparkles className="w-5 h-5 text-tertiary" />
@@ -289,15 +329,15 @@ export default function FloatingChatbot() {
                 </div>
               </div>
               <div className="relative z-[101] flex items-center gap-1">
-                <button 
+                <button
                   onClick={toggleVoiceOutput}
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                  aria-label="Toggle Voice Out"
-                  title={isVoiceOutputEnabled ? "Mute Voice" : "Enable Voice"}
+                  aria-label="Toggle Voice Output"
+                  title={isVoiceOutputEnabled ? 'Mute Voice' : 'Enable Voice'}
                 >
                   {isVoiceOutputEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5 text-white/50" />}
                 </button>
-                <button 
+                <button
                   onClick={() => setIsOpen(false)}
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
                   aria-label="Close Chat"
@@ -307,29 +347,25 @@ export default function FloatingChatbot() {
               </div>
             </div>
 
-            {/* Chat Area */}
+            {/* Messages */}
             <div className="flex-1 p-4 overflow-y-auto bg-slate-50 flex flex-col gap-4">
               {messages.map((msg) => {
                 if (msg.sender === 'system') {
                   return (
                     <div key={msg.id} className="flex justify-center my-2">
-                       <div className="bg-green-50 border border-green-200 text-green-800 text-xs px-4 py-2 rounded-full font-medium shadow-sm flex items-center gap-2">
-                         <CheckCircle2 className="w-4 h-4 text-green-600" />
-                         {msg.text}
-                       </div>
+                      <div className="bg-green-50 border border-green-200 text-green-800 text-xs px-4 py-2 rounded-full font-medium shadow-sm flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        {msg.text}
+                      </div>
                     </div>
                   );
                 }
-
                 return (
-                  <div 
-                    key={msg.id} 
-                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div 
+                  <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
                       className={`max-w-[85%] rounded-2xl p-3 shadow-sm ${
-                        msg.sender === 'user' 
-                          ? 'bg-primary text-white rounded-br-none' 
+                        msg.sender === 'user'
+                          ? 'bg-primary text-white rounded-br-none'
                           : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
                       }`}
                     >
@@ -338,15 +374,15 @@ export default function FloatingChatbot() {
                   </div>
                 );
               })}
-              
+
               {isListening && (
                 <div className="flex justify-end">
-                   <div className="bg-primary/10 text-primary border border-primary/20 rounded-2xl p-3 rounded-br-none shadow-sm flex gap-2 items-center">
+                  <div className="bg-primary/10 text-primary border border-primary/20 rounded-2xl p-3 rounded-br-none shadow-sm flex gap-2 items-center">
                     <span className="flex h-2 w-2 relative">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                     </span>
-                    <span className="text-xs font-medium">Listening...</span>
+                    <span className="text-xs font-medium">Listening…</span>
                   </div>
                 </div>
               )}
@@ -355,83 +391,75 @@ export default function FloatingChatbot() {
                 <div className="flex justify-start">
                   <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none p-4 shadow-sm flex gap-2 items-center">
                     <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    <span className="text-xs text-gray-500 font-medium">Lumina AI is thinking...</span>
+                    <span className="text-xs text-gray-500 font-medium">Lumina AI is thinking…</span>
                   </div>
                 </div>
               )}
+
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white border-t border-gray-100 relative">
-               <div className="flex items-center gap-2">
-                 
-                 {isSpeechAvailable && (
-                   <button
+            {/* Input */}
+            <div className="p-4 bg-white border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                {isSpeechAvailable && (
+                  <button
                     onClick={toggleListen}
-                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0 ${isListening ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0 ${
+                      isListening ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    }`}
                     title={isListening ? 'Stop recording' : 'Speak to agent'}
-                   >
-                     {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                   </button>
-                 )}
-
+                  >
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
+                )}
                 <div className="flex-1 flex items-center bg-gray-50 rounded-full pr-2 pl-4 py-1 border border-gray-200 focus-within:border-primary focus-within:bg-white transition-all">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={isListening ? "Listening..." : "Message AI Agent..."}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
+                    placeholder={isListening ? 'Listening…' : 'Message AI Agent…'}
                     className="flex-1 bg-transparent border-none focus:outline-none text-sm py-2 text-gray-800"
-                    disabled={isListening}
+                    disabled={isListening || isLoading}
                   />
-                  <button 
+                  <button
                     onClick={() => handleSendMessage()}
-                    disabled={(!inputValue.trim() && !isListening) || isLoading}
+                    disabled={!inputValue.trim() || isLoading}
                     className="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-white disabled:opacity-50 disabled:bg-gray-300 transition-colors"
                   >
-                    <Send className="w-4 h-4 ml-1" />
+                    <Send className="w-4 h-4 ml-0.5" />
                   </button>
                 </div>
               </div>
             </div>
-            
+
             {/* Attribution */}
             <div className="bg-white border-t border-gray-50 py-1.5 text-center">
-              <span className="text-[10px] text-gray-400 font-light tracking-wide uppercase">AI Assistant • Powered by Google GenAI</span>
+              <span className="text-[10px] text-gray-400 font-light tracking-wide uppercase">
+                AI Assistant • Powered by Google GenAI
+              </span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Floating button */}
       <motion.button
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform z-[100] group"
-        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform z-[100]"
+        onClick={() => setIsOpen((prev) => !prev)}
         whileHover={{ rotate: 15 }}
         whileTap={{ scale: 0.9 }}
         aria-label="Toggle Chat"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <X className="w-6 h-6 outline-none" />
+            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+              <X className="w-6 h-6" />
             </motion.div>
           ) : (
-            <motion.div
-              key="chat"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <MessageSquare className="w-6 h-6 outline-none" />
+            <motion.div key="chat" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
+              <MessageSquare className="w-6 h-6" />
             </motion.div>
           )}
         </AnimatePresence>
