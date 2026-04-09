@@ -13,13 +13,13 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="pt-28 pb-32 bg-paper min-h-screen">
+    <div className="pt-20 sm:pt-28 pb-16 sm:pb-32 bg-paper min-h-screen">
       <SEO 
         title={`Our Story | ${siteConfig.brand.name}`}
         description={`Learn about ${siteConfig.brand.name}'s journey to becoming the premier service firm.`}
       />
       
-      <div className="max-w-[1400px] mx-auto px-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         
         {/* Cinematic Header */}
         <div className="text-center mb-24 max-w-4xl mx-auto flex flex-col items-center">
@@ -41,7 +41,7 @@ export default function AboutPage() {
         </div>
 
         {/* The Founder's Story / Split Layout */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-32">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start lg:items-center mb-20 lg:mb-32">
           <TiltCard depth={10}>
             <motion.div 
                initial={{ opacity: 0, x: -30 }} 
@@ -55,8 +55,8 @@ export default function AboutPage() {
                 alt="Luxury Experience" 
                 className="relative z-10 w-full h-[600px] object-cover rounded-[3rem] transition-transform duration-700 hover:scale-105" 
               />
-              <div className="absolute -bottom-10 -right-10 bg-primary text-inverted p-10 rounded-[2rem] shadow-2xl z-20 max-w-[280px] border border-tertiary/20" style={{ transform: "translateZ(50px)" }}>
-                <p className="font-serif text-3xl mb-2 text-tertiary">"Perfection is not an accident."</p>
+              <div className="absolute -bottom-6 -right-4 sm:-bottom-10 sm:-right-10 bg-primary text-inverted p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl z-20 max-w-[240px] sm:max-w-[280px] border border-tertiary/20" style={{ transform: "translateZ(50px)" }}>
+                <p className="font-serif text-2xl sm:text-3xl mb-2 text-tertiary">"Perfection is not an accident."</p>
                 <p className="text-sm font-bold uppercase tracking-widest opacity-70">— Founder</p>
               </div>
             </motion.div>
@@ -99,7 +99,7 @@ export default function AboutPage() {
             <p className="text-secondary font-light max-w-2xl mx-auto">The principles that drive our artisans and govern every interaction with your sanctuary.</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {[
               { t: "Sustainable Luxury", d: "Using environmentally conscious, premium-grade formulations that are safe for rare finishes, pets, and children.", img: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?q=80&w=1000&auto=format&fit=crop" },
               { t: "Rigorous Precision", d: "No detail is overlooked. From baseboards to chandeliers, our proprietary 60-point checklist ensures immaculate results.", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop" },
@@ -140,12 +140,12 @@ export default function AboutPage() {
 
         {/* Elite Stats */}
         <TiltCard depth={5}>
-          <div className="bg-primary rounded-[3rem] px-10 py-20 text-center relative overflow-hidden border border-tertiary/20 luxury-shadow-3d">
+          <div className="bg-primary rounded-[2rem] sm:rounded-[3rem] px-6 sm:px-10 py-12 sm:py-20 text-center relative overflow-hidden border border-tertiary/20 luxury-shadow-3d">
              <div className="absolute inset-0 bg-tertiary/10 blur-[100px]"></div>
-             <div className="relative z-10 grid md:grid-cols-3 gap-12 max-w-5xl mx-auto" style={{ transform: "translateZ(20px)" }}>
+             <div className="relative z-10 grid sm:grid-cols-3 gap-8 sm:gap-12 max-w-5xl mx-auto" style={{ transform: "translateZ(20px)" }}>
                {stats.map((s, i) => (
                   <div key={i} className="space-y-2">
-                    <div className="font-serif text-6xl text-tertiary">{s.value}</div>
+                    <div className="font-serif text-4xl sm:text-6xl text-tertiary">{s.value}</div>
                     <div className="text-inverted text-sm font-bold uppercase tracking-[0.2em]">{s.label}</div>
                   </div>
                ))}

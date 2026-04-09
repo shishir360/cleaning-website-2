@@ -153,10 +153,10 @@ export default function BookingPage() {
            className="relative z-10 w-full max-w-3xl print:hidden"
         >
           <TiltCard depth={10}>
-            <div className="bg-inverted border border-tertiary/30 rounded-[3rem] luxury-shadow-3d overflow-hidden flex flex-col md:flex-row">
+            <div className="bg-inverted border border-tertiary/30 rounded-[2rem] sm:rounded-[3rem] luxury-shadow-3d overflow-hidden flex flex-col md:flex-row">
               
               {/* Left Side: Summary & Action */}
-              <div className="p-10 md:p-14 md:w-[55%] flex flex-col justify-center">
+              <div className="p-8 sm:p-10 md:p-14 md:w-[55%] flex flex-col justify-center">
                  <div className="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mb-8 border border-tertiary/20">
                     <CheckCircle2 className="w-8 h-8 text-tertiary" />
                  </div>
@@ -175,7 +175,7 @@ export default function BookingPage() {
               </div>
 
               {/* Right Side: Receipt Details */}
-              <div className="bg-paper p-10 md:p-14 md:w-[45%] border-l border-black/5 relative flex flex-col justify-center">
+              <div className="bg-paper p-8 sm:p-10 md:p-14 md:w-[45%] border-t md:border-t-0 md:border-l border-black/5 relative flex flex-col justify-center">
                  {/* Decorative background element inside receipt */}
                  <div className="absolute top-0 right-0 p-6 opacity-10">
                     <Lock className="w-32 h-32 text-primary" />
@@ -214,20 +214,20 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper pt-28 pb-20 font-sans">
+    <div className="min-h-screen bg-paper pt-20 sm:pt-28 pb-16 sm:pb-20 font-sans">
       <SEO title="Book a Cleaning | Lumina" description="Reserve your elite residential cleaning service instantly." />
       
-      <div className="max-w-[1400px] mx-auto px-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
          {/* Page Header */}
          <div className="mb-8 pl-4 border-l-2 border-tertiary">
             <h1 className="font-serif text-3xl md:text-5xl text-primary tracking-tight mb-2">Reserve your service</h1>
             <p className="text-secondary font-light text-lg">Curating the highest standard of cleanliness.</p>
          </div>
 
-         <div className="flex flex-col lg:flex-row gap-8 items-start">
+         <div className="flex flex-col lg:flex-row-reverse gap-6 lg:gap-8 items-start">
             
-            {/* LEFT COLUMN: Main Form Content */}
-            <div className="w-full lg:w-[65%]">
+            {/* MAIN FORM — full width on mobile, 65% on desktop */}
+            <div className="w-full lg:w-[65%] lg:order-1">
                
                <AnimatePresence mode="wait">
                  {/* STEP 1: SPACE */}
@@ -465,7 +465,7 @@ export default function BookingPage() {
                </AnimatePresence>
 
                {/* Navigation Buttons */}
-               <div className="mt-12 flex items-center justify-between border-t border-black/5 pt-8">
+               <div className="mt-8 sm:mt-12 flex items-center justify-between border-t border-black/5 pt-6 sm:pt-8 gap-3">
                   {step > 1 ? (
                     <button onClick={handlePrev} className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-secondary hover:text-primary transition-colors border border-black/10 px-6 py-4 rounded-none bg-inverted">
                       <ArrowLeft className="w-4 h-4" /> Go Back
@@ -484,8 +484,8 @@ export default function BookingPage() {
                </div>
             </div>
 
-            {/* RIGHT COLUMN: Sticky Sidebar / Progressive Receipt */}
-            <div className="w-full lg:w-[35%] relative">
+            {/* SIDEBAR — below form on mobile, right column on desktop */}
+            <div className="w-full lg:w-[35%] lg:order-2 relative">
                <div className="sticky top-32">
                  <TiltCard depth={5}>
                    <div className="bg-primary rounded-[2rem] overflow-hidden luxury-shadow-3d border border-tertiary/20">

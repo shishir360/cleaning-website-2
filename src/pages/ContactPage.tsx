@@ -54,14 +54,14 @@ export default function ContactPage() {
                initial={{ opacity: 0, x: -20 }}
                animate={{ opacity: 1, x: 0 }}
                transition={{ delay: 0.2 }}
-               className="bg-primary p-12 rounded-[2rem] luxury-shadow-3d border border-tertiary/20 relative overflow-hidden"
+               className="bg-primary p-6 sm:p-12 rounded-[2rem] luxury-shadow-3d border border-tertiary/20 relative overflow-hidden"
              >
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-tertiary/5 blur-[100px] pointer-events-none"></div>
                 
                 <h2 className="font-serif text-3xl text-inverted mb-8 relative z-10" style={{ transform: "translateZ(30px)" }}>Direct Inquiry</h2>
                 
                 <form className="relative z-10 space-y-6" style={{ transform: "translateZ(40px)" }}>
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-widest text-inverted/70 block mb-2">First Name</label>
                         <input type="text" className="w-full bg-inverted/10 border-b border-white/20 p-3 text-inverted focus:outline-none focus:border-tertiary transition-colors hover:bg-inverted/20" />

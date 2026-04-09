@@ -18,7 +18,7 @@ export default function CareersPage() {
       />
 
       {/* Cinematic Hero */}
-      <div className="relative h-[600px] mb-24 overflow-hidden rounded-[3rem] mx-6 max-w-[1400px] xl:mx-auto">
+      <div className="relative h-[400px] sm:h-[500px] md:h-[600px] mb-16 sm:mb-24 overflow-hidden rounded-[2rem] sm:rounded-[3rem] mx-4 sm:mx-6 max-w-[1400px] xl:mx-auto">
          <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop" alt="Elite Cleaning Professional" className="absolute inset-0 w-full h-full object-cover" />
          <div className="absolute inset-0 bg-primary/80"></div>
          
@@ -64,11 +64,11 @@ export default function CareersPage() {
            initial={{ opacity: 0, x: 20 }}
            whileInView={{ opacity: 1, x: 0 }}
            viewport={{ once: true }}
-           className="bg-inverted p-12 rounded-[2rem] shadow-2xl border border-black/5"
+           className="bg-inverted p-6 sm:p-12 rounded-[2rem] shadow-2xl border border-black/5"
          >
             <h3 className="font-serif text-3xl text-primary mb-8">Apply for Consideration</h3>
             <form className="space-y-6">
-               <div className="grid grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                  <div>
                    <label className="text-[10px] uppercase font-bold text-secondary tracking-widest block mb-2">First Name</label>
                    <input type="text" className="w-full bg-paper border border-black/10 rounded-none p-4 focus:outline-none focus:border-tertiary text-primary" />

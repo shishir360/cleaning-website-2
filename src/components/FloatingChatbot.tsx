@@ -369,7 +369,7 @@ export default function FloatingChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-[99] max-w-[260px]"
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-[99] max-w-[240px] sm:max-w-[260px]"
           >
             <div
               className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 cursor-pointer relative"
@@ -539,7 +539,7 @@ export default function FloatingChatbot() {
 
       {/* Floating button */}
       <motion.button
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform z-[100]"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform z-[100]"
         onClick={() => setIsOpen((prev) => !prev)}
         whileHover={{ rotate: 15 }}
         whileTap={{ scale: 0.9 }}

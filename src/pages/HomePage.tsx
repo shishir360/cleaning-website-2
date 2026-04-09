@@ -16,7 +16,7 @@ import InteractiveBentoGallery from '../components/ui/interactive-bento-gallery'
 
 function CinematicHero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
+    <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden">
       <img 
         src={siteConfig.images.homeHero} 
         className="absolute inset-0 w-full h-full object-cover scale-105" 
@@ -24,7 +24,7 @@ function CinematicHero() {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-transparent"></div>
       
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         <div className="lg:col-span-7 flex flex-col justify-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -36,7 +36,7 @@ function CinematicHero() {
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-tertiary">#1 Ranked Service</span>
           </motion.div>
           
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-[7.5rem] text-inverted leading-[0.95] tracking-tight mb-8">
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-[7rem] xl:text-[7.5rem] text-inverted leading-[0.95] tracking-tight mb-6 sm:mb-8">
             <ThreeDText text={siteConfig.brand.taglineHeading.split('.')[0] + '.'} wordMode={true} />
             <br/>
             <span className="text-tertiary italic font-light"><ThreeDText text={siteConfig.brand.name} delay={0.3} wordMode={true} /></span>
@@ -46,7 +46,7 @@ function CinematicHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl md:text-2xl text-inverted/80 max-w-xl mb-12 font-light leading-relaxed tracking-wide"
+            className="text-base sm:text-xl md:text-2xl text-inverted/80 max-w-xl mb-8 sm:mb-12 font-light leading-relaxed tracking-wide"
           >
             {siteConfig.brand.taglineSubheading}
           </motion.p>
@@ -56,9 +56,9 @@ function CinematicHero() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="lg:col-span-5 w-full flex justify-end"
+          className="lg:col-span-5 w-full flex justify-center lg:justify-end"
         >
-          <div className="bg-inverted p-6 sm:p-10 rounded-[2rem] shadow-2xl border border-primary/5 w-full max-w-[450px] relative overflow-hidden group">
+          <div className="bg-inverted p-5 sm:p-8 lg:p-10 rounded-[2rem] shadow-2xl border border-primary/5 w-full max-w-[420px] relative overflow-hidden group">
             <h3 className="font-serif text-3xl text-primary mb-8">Reserve {siteConfig.brand.abbreviation}</h3>
             
             <div className="space-y-4 mb-8">
@@ -122,9 +122,9 @@ function TrustBadges() {
 
 function MeetTheProfessionals() {
   return (
-    <section className="py-32 bg-paper relative overflow-hidden">
+    <section className="py-16 sm:py-24 lg:py-32 bg-paper relative overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6">
-        <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8">
+        <div className="flex flex-col lg:flex-row justify-between items-end mb-10 lg:mb-16 gap-6 lg:gap-8">
           <div className="max-w-2xl">
             <span className="text-tertiary text-sm font-bold tracking-widest uppercase mb-4 block">The Human Element.</span>
             <h2 className="font-serif text-4xl md:text-6xl text-primary tracking-tight leading-[1]">
@@ -137,7 +137,7 @@ function MeetTheProfessionals() {
         <div className="relative w-full overflow-hidden -mx-6 px-6 py-4">
           <InfiniteSlider duration={40} gap={32} className="flex h-full w-full pb-8">
             {siteConfig.socialProof.team.map((member, i) => (
-              <div key={i} className="w-[320px] md:w-[380px] shrink-0 h-full">
+              <div key={i} className="w-[280px] sm:w-[320px] md:w-[380px] shrink-0 h-full">
                <TiltCard depth={15} className="h-full">
                 <motion.div 
                   initial={{ opacity: 0, y: 40 }}
@@ -190,7 +190,7 @@ function BeforeAfterSliderItem({ before, after, label, initial = 50, delay = 0, 
          whileInView={{ opacity: 1, x: 0 }}
          viewport={{ once: true }}
          transition={{ delay }}
-         className="group rounded-[3rem] overflow-hidden relative luxury-shadow-3d h-[500px]"
+         className="group rounded-[2rem] sm:rounded-[3rem] overflow-hidden relative luxury-shadow-3d h-[320px] sm:h-[420px] md:h-[500px]"
        >
           {/* Base image (After) */}
           <div className="absolute inset-0 z-0">
@@ -235,7 +235,7 @@ function BeforeAfterSliderItem({ before, after, label, initial = 50, delay = 0, 
 function BeforeAfterGallery() {
   const g = siteConfig.socialProof.gallery;
   return (
-     <section className="py-32 bg-primary text-inverted overflow-hidden relative">
+     <section className="py-16 sm:py-24 lg:py-32 bg-primary text-inverted overflow-hidden relative">
         <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-tertiary/10 rounded-full blur-[150px] -ml-96 -mt-96 pointer-events-none"></div>
         <div className="max-w-[1400px] mx-auto px-6 relative z-10">
           <div className="text-center mb-20">
@@ -244,7 +244,7 @@ function BeforeAfterGallery() {
             <p className="text-inverted/60 text-xl font-light max-w-2xl mx-auto">No marketing fluff. Just undeniable, high-resolution results.</p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
              <BeforeAfterSliderItem 
                before={g.beforeAfter1.before} 
                after={g.beforeAfter1.after} 
@@ -270,7 +270,7 @@ function ImageHeavyServices() {
   const customSpans = ["lg:col-span-8", "lg:col-span-4", "lg:col-span-4", "lg:col-span-8"];
   
   return (
-    <section className="py-32 px-6 bg-paper" id="services">
+    <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 bg-paper" id="services">
       <div className="max-w-[1400px] mx-auto">
         <div className="text-center mb-16">
           <span className="text-tertiary text-sm font-bold tracking-widest uppercase mb-4 block">The Portfolio</span>
@@ -278,12 +278,12 @@ function ImageHeavyServices() {
           <p className="text-secondary max-w-xl mx-auto text-lg font-light px-4">Every space requires a bespoke approach. Explore our primary packages tailored for elite residences.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 h-auto">
           {siteConfig.services.slice(0, 4).map((tier, i) => (
             <TiltCard 
               key={tier.id}
               depth={8}
-              className={`${customSpans[i]} relative rounded-[3rem] overflow-hidden group min-h-[400px] ml-0 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 cursor-pointer`}
+              className={`${customSpans[i]} sm:col-span-1 relative rounded-[2rem] sm:rounded-[3rem] overflow-hidden group min-h-[280px] sm:min-h-[350px] lg:min-h-[400px] ml-0 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 cursor-pointer`}
             >
               <Link to={`/services/${tier.slug}`} className="block w-full h-full">
                 <img src={tier.imgUrl} alt={tier.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-in-out z-0" />
@@ -385,7 +385,7 @@ const cleaningGalleryItems = [
 
 function BentoGallerySection() {
   return (
-    <section className="py-32 bg-paper relative overflow-hidden">
+    <section className="py-16 sm:py-24 lg:py-32 bg-paper relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tertiary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="max-w-[1400px] mx-auto px-6">
         <div className="text-center mb-4">

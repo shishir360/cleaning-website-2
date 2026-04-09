@@ -380,7 +380,7 @@ export default function FloatingVoiceAgent() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="fixed bottom-20 right-20 sm:bottom-24 sm:right-24 z-[99] max-w-[240px]"
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-24 z-[99] max-w-[220px] sm:max-w-[240px]"
           >
             <div
               className="rounded-2xl shadow-2xl p-4 cursor-pointer relative overflow-hidden"
@@ -618,7 +618,7 @@ export default function FloatingVoiceAgent() {
 
       {/* Floating Voice Button — sits left of the chatbot button */}
       <motion.button
-        className="fixed bottom-4 right-20 sm:bottom-6 sm:right-24 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white z-[100]"
+        className="fixed bottom-4 right-20 sm:bottom-6 sm:right-24 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center text-white z-[100]"
         style={{
           background: isOpen
             ? 'linear-gradient(135deg, #ef4444, #dc2626)'
