@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Sparkles, Loader2, Mic, MicOff, Volume2, VolumeX, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Loader2, Mic, MicOff, Volume2, VolumeX, CheckCircle2, Bot } from 'lucide-react';
 
 // ─── Gemini REST API ───────────────────────────────────────────────────────────
 // In production (Netlify): calls /.netlify/functions/chat (no key exposed)
@@ -117,6 +117,8 @@ type UIMessage = {
 // ─── Component ─────────────────────────────────────────────────────────────────
 export default function FloatingChatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: '1',
@@ -130,6 +132,31 @@ export default function FloatingChatbot() {
 
   // Multi-turn Gemini history (separate from UI messages)
   const geminiHistoryRef = useRef<GeminiContent[]>([]);
+
+  // Auto-show notification bubble after 2s, hide after 8s
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      if (!isOpen) setShowNotification(true);
+    }, 2000);
+    notifTimerRef.current = setTimeout(() => {
+      setShowNotification(false);
+    }, 10000);
+    return () => {
+      clearTimeout(showTimer);
+      if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dismissNotification = useCallback(() => {
+    setShowNotification(false);
+    if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+  }, []);
+
+  const openChatFromNotification = useCallback(() => {
+    dismissNotification();
+    setIsOpen(true);
+  }, [dismissNotification]);
 
   // Voice
   const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(true);
@@ -307,6 +334,45 @@ export default function FloatingChatbot() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
+      {/* Proactive Notification Bubble */}
+      <AnimatePresence>
+        {showNotification && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-[99] max-w-[260px]"
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 cursor-pointer relative"
+              onClick={openChatFromNotification}
+            >
+              {/* Close button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); dismissNotification(); }}
+                className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <div className="flex items-start gap-3 pr-4">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-800 mb-0.5">Lumina AI Agent</p>
+                  <p className="text-sm text-gray-600 leading-snug">👋 Hey! How can I help you today?</p>
+                  <p className="text-xs text-primary font-medium mt-1.5">Click to chat →</p>
+                </div>
+              </div>
+              {/* Tail */}
+              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-gray-100 rotate-45" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
