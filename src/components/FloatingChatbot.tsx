@@ -60,8 +60,9 @@ export default function FloatingChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Gemini session
-  const [chatSession, setChatSession] = useState<any>(null);
+  // KEY FIX: Use ref for chat session — avoids React async state update delay
+  // When user sends first message, useState would still be null; useRef is instant.
+  const chatSessionRef = useRef<any>(null);
   
   // Voice states
   const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(true);
@@ -69,31 +70,21 @@ export default function FloatingChatbot() {
   const recognitionRef = useRef<any>(null);
   const [isSpeechAvailable, setIsSpeechAvailable] = useState(false);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
 
+  // Set up speech recognition once on mount
   useEffect(() => {
-    // Check speech availability
     if (SpeechRecognition) {
       setIsSpeechAvailable(true);
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
-
-      recognition.onresult = (event: any) => {
-        const text = event.results[0][0].transcript;
-        setInputValue(text);
-        setIsListening(false);
-        // We auto-send the spoken text if desired, but user might want to edit.
-        // Let's auto-send it to simulate a real conversation
-        if (text.trim().length > 0) {
-          handleSendMessage(text);
-        }
-      };
 
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error", event.error);
@@ -106,66 +97,56 @@ export default function FloatingChatbot() {
 
       recognitionRef.current = recognition;
     }
-  }, [chatSession]); // Re-bind handleSendMessage appropriately? Actually safer to let onresult trigger a queued action or call the ref-wrapped function.
+  }, []);
   
-  // We use a ref mechanism for the auto-send to always have the latest chatSession
-  const autoSendRef = useRef<((txt: string) => void) | null>(null);
+  // Keep a always-fresh ref to handleSendMessage for speech recognition callback
+  const handleSendMessageRef = useRef<((txt: string) => void) | null>(null);
   
-  useEffect(() => {
-    autoSendRef.current = handleSendMessage;
-  });
-
+  // Wire up speech recognition result to always-fresh ref
   useEffect(() => {
     if (recognitionRef.current) {
       recognitionRef.current.onresult = (event: any) => {
         const text = event.results[0][0].transcript;
         setInputValue('');
         setIsListening(false);
-        if (text.trim().length > 0 && autoSendRef.current) {
-          autoSendRef.current(text);
+        if (text.trim().length > 0 && handleSendMessageRef.current) {
+          handleSendMessageRef.current(text);
         }
       };
     }
   }, [isSpeechAvailable]);
 
-
+  // Initialize chat session immediately when chatbot opens
   useEffect(() => {
-    if (isOpen && ai && !chatSession) {
+    if (isOpen && ai && !chatSessionRef.current) {
       try {
-        const chat = ai.chats.create({
-          model: 'gemini-2.5-flash',
+        chatSessionRef.current = ai.chats.create({
+          model: 'gemini-2.0-flash',
           config: {
             systemInstruction: SYSTEM_PROMPT,
             tools: [bookingTool as any],
           }
         });
-        setChatSession(chat);
         
-        // Greet with voice when first opened if output enabled
+        // Greet with voice when first opened
         if (isVoiceOutputEnabled && messages.length === 1) {
           speakText(messages[0].text);
         }
-
       } catch (err) {
         console.error("Failed to init chat session", err);
       }
     }
-  }, [isOpen, ai, chatSession]);
+  }, [isOpen]);
 
   const speakText = (text: string) => {
     if (!isVoiceOutputEnabled || !window.speechSynthesis) return;
-    
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
-    
     const utterance = new SpeechSynthesisUtterance(text);
-    // Use a natural sounding voice if available
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Natural')) || voices[0];
     if (preferredVoice) utterance.voice = preferredVoice;
-    
     utterance.rate = 1.0;
-    utterance.pitch = 1.1; // Slightly more welcoming pitch
+    utterance.pitch = 1.1;
     window.speechSynthesis.speak(utterance);
   };
 
@@ -175,7 +156,7 @@ export default function FloatingChatbot() {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
-      setInputValue(''); // clear field when listening starts
+      setInputValue('');
       recognitionRef.current.start();
       setIsListening(true);
     }
@@ -183,9 +164,7 @@ export default function FloatingChatbot() {
 
   const toggleVoiceOutput = () => {
     setIsVoiceOutputEnabled(prev => {
-      if (prev) {
-        window.speechSynthesis.cancel(); // Stop talking immediately if turned off
-      }
+      if (prev) window.speechSynthesis.cancel();
       return !prev;
     });
   };
@@ -194,23 +173,40 @@ export default function FloatingChatbot() {
     const messageToSend = textOveride || inputValue;
     if (!messageToSend.trim()) return;
     
-    // Stop agent from talking when user sends a new message
     window.speechSynthesis.cancel();
-
     if (!textOveride) setInputValue('');
     
     const newUserMessage: Message = { id: Date.now().toString(), sender: 'user', text: messageToSend.trim() };
     setMessages((prev) => [...prev, newUserMessage]);
     
-    if (!ai || !chatSession) {
-      setMessages((prev) => [...prev, { id: Date.now().toString(), sender: 'ai', text: 'Sorry, I am currently offline or missing the API key configuration. Please call us at (212) 555-0198.' }]);
+    // If session not yet created (edge case: user typed before useEffect ran), create it now
+    if (ai && !chatSessionRef.current) {
+      try {
+        chatSessionRef.current = ai.chats.create({
+          model: 'gemini-2.0-flash',
+          config: {
+            systemInstruction: SYSTEM_PROMPT,
+            tools: [bookingTool as any],
+          }
+        });
+      } catch (err) {
+        console.error("Failed to init chat session on demand", err);
+      }
+    }
+    
+    if (!ai || !chatSessionRef.current) {
+      setMessages((prev) => [...prev, { 
+        id: Date.now().toString(), 
+        sender: 'ai', 
+        text: 'Sorry, I am currently offline or missing the API key configuration. Please call us at (212) 555-0198.' 
+      }]);
       return;
     }
 
     setIsLoading(true);
     
     try {
-      let response = await chatSession.sendMessage({ message: messageToSend.trim() });
+      let response = await chatSessionRef.current.sendMessage({ message: messageToSend.trim() });
       
       // Handle Function Calling
       if (response.functionCalls && response.functionCalls.length > 0) {
@@ -218,7 +214,6 @@ export default function FloatingChatbot() {
         
         if (call.name === "book_appointment") {
           const args = call.args;
-          // Render a custom system message to show booking success
           const bookingMsg: Message = {
             id: Date.now().toString() + '-sys',
             sender: 'system',
@@ -226,13 +221,15 @@ export default function FloatingChatbot() {
           };
           setMessages(prev => [...prev, bookingMsg]);
           
-          // Reply to the model letting it know the tool succeeded
-          response = await chatSession.sendMessage([{
-            functionResponse: {
-              name: 'book_appointment',
-              response: { status: 'success', confirmation_id: 'LUM-' + Math.floor(Math.random() * 10000) }
-            }
-          }]);
+          // Send tool result back to model
+          response = await chatSessionRef.current.sendMessage({
+            message: [{
+              functionResponse: {
+                name: 'book_appointment',
+                response: { status: 'success', confirmation_id: 'LUM-' + Math.floor(Math.random() * 10000) }
+              }
+            }]
+          });
         }
       }
       
@@ -243,27 +240,29 @@ export default function FloatingChatbot() {
           text: response.text 
         };
         setMessages((prev) => [...prev, newAiMessage]);
-        
-        // Speak the response if enabled
         speakText(response.text);
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat AI Error:', error);
+      const errMsg = error?.message?.includes('API_KEY_INVALID') 
+        ? 'The AI API key is invalid. Please contact support.'
+        : 'Sorry, I encountered an error connecting to the AI system. Please try again later.';
       setMessages((prev) => [...prev, { 
         id: Date.now().toString(), 
         sender: 'ai', 
-        text: 'Sorry, I encountered an error connecting to the AI system. Please try again later.' 
+        text: errMsg
       }]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Always keep ref in sync with latest handler (for speech)
+  handleSendMessageRef.current = handleSendMessage;
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
+    if (e.key === 'Enter') handleSendMessage();
   };
 
   return (
