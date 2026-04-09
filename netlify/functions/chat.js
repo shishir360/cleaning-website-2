@@ -61,7 +61,8 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Accept either GEMINI_API_KEY or VITE_GEMINI_API_KEY (whichever is set in Netlify dashboard)
+  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     return {
       statusCode: 500,
