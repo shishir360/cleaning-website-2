@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Phone, ArrowRight, Share2, MessageCircle, Link as LinkIcon, Globe, Feather, Send, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import FloatingChatbot from './FloatingChatbot';
+import FloatingVoiceAgent from './FloatingVoiceAgent';
 import { NavHeader } from './ui/nav-header';
 import { TiltCard } from './ui/TiltCard';
 
@@ -193,6 +194,7 @@ export default function Layout() {
         <Outlet />
       </AnimatePresence>
       <Footer />
+      <FloatingVoiceAgent />
       <FloatingChatbot />
     </div>
   );
