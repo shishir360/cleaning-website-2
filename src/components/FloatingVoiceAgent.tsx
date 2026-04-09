@@ -2,6 +2,31 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff, X, Sparkles, Volume2, VolumeX, Phone, PhoneOff } from 'lucide-react';
 
+// ─── Voice Agent Notification Sound (rising 3-note chime) ────────────────────
+function playVoiceNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const playTone = (freq: number, startAt: number, duration: number, gain: number) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + startAt);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime + startAt);
+      gainNode.gain.linearRampToValueAtTime(gain, ctx.currentTime + startAt + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + duration);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + duration);
+    };
+    // Rising 3-note: G4 → B4 → D5 (feels like a phone ring / voice alert)
+    playTone(392, 0,    0.22, 0.13);
+    playTone(493.88, 0.2, 0.22, 0.13);
+    playTone(587.33, 0.4, 0.32, 0.16);
+    setTimeout(() => ctx.close(), 1200);
+  } catch { /* audio not available */ }
+}
+
 // ─── Reuse same Gemini setup as chatbot ───────────────────────────────────────
 const CLIENT_API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY as string | undefined;
 const IS_NETLIFY = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
@@ -147,6 +172,8 @@ type ConvEntry = { role: 'user' | 'ai'; text: string };
 
 export default function FloatingVoiceAgent() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [agentState, setAgentState] = useState<'idle' | 'listening' | 'speaking' | 'thinking'>('idle');
   const [conversation, setConversation] = useState<ConvEntry[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState('');
@@ -158,6 +185,34 @@ export default function FloatingVoiceAgent() {
   const geminiHistoryRef = useRef<GeminiContent[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const handleUserSpeechRef = useRef<((text: string) => void) | null>(null);
+
+  // Auto-show voice notification bubble at 3.5s (offset from chatbot's 2s)
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      if (!isOpen) {
+        setShowNotification(true);
+        playVoiceNotifSound();
+      }
+    }, 3500);
+    notifTimerRef.current = setTimeout(() => {
+      setShowNotification(false);
+    }, 12000);
+    return () => {
+      clearTimeout(showTimer);
+      if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dismissVoiceNotif = useCallback(() => {
+    setShowNotification(false);
+    if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+  }, []);
+
+  const openFromNotif = useCallback(() => {
+    dismissVoiceNotif();
+    setIsOpen(true);
+  }, [dismissVoiceNotif]);
 
   // Scroll conversation to bottom
   useEffect(() => {
@@ -317,6 +372,62 @@ export default function FloatingVoiceAgent() {
 
   return (
     <>
+      {/* Voice Agent Notification Bubble */}
+      <AnimatePresence>
+        {showNotification && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="fixed bottom-20 right-20 sm:bottom-24 sm:right-24 z-[99] max-w-[240px]"
+          >
+            <div
+              className="rounded-2xl shadow-2xl p-4 cursor-pointer relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #1a1f3c, #0e1120)',
+                border: '1px solid rgba(99,102,241,0.35)',
+                boxShadow: '0 4px 24px rgba(99,102,241,0.25)',
+              }}
+              onClick={openFromNotif}
+            >
+              {/* Close */}
+              <button
+                onClick={(e) => { e.stopPropagation(); dismissVoiceNotif(); }}
+                className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <div className="flex items-start gap-3 pr-4">
+                {/* Animated mic icon */}
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', boxShadow: '0 0 10px rgba(99,102,241,0.5)' }}
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <Mic className="w-4 h-4 text-white" />
+                  </motion.div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white/90 mb-0.5">Lumina Voice Agent</p>
+                  <p className="text-sm text-white/60 leading-snug">🎙️ Want to talk instead?</p>
+                  <p className="text-xs font-medium mt-1.5" style={{ color: '#818cf8' }}>Click to call →</p>
+                </div>
+              </div>
+              {/* Tail */}
+              <div
+                className="absolute -bottom-2 right-6 w-4 h-4 rotate-45"
+                style={{ background: '#0e1120', border: '1px solid rgba(99,102,241,0.35)', borderLeft: 'none', borderTop: 'none' }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Voice Agent Modal */}
       <AnimatePresence>
         {isOpen && (

@@ -2,6 +2,30 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, X, Send, Sparkles, Loader2, Mic, MicOff, Volume2, VolumeX, CheckCircle2, Bot } from 'lucide-react';
 
+// ─── Notification Sound (Web Audio API — no files needed) ─────────────────────
+function playChatNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const playTone = (freq: number, startAt: number, duration: number, gain: number) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + startAt);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime + startAt);
+      gainNode.gain.linearRampToValueAtTime(gain, ctx.currentTime + startAt + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + duration);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + duration);
+    };
+    // Soft two-tone ding: C5 then E5
+    playTone(523.25, 0, 0.35, 0.18);
+    playTone(659.25, 0.18, 0.45, 0.14);
+    setTimeout(() => ctx.close(), 1000);
+  } catch { /* audio not available */ }
+}
+
 // ─── Gemini REST API ───────────────────────────────────────────────────────────
 // In production (Netlify): calls /.netlify/functions/chat (no key exposed)
 // In local dev: uses VITE_GEMINI_API_KEY directly to Gemini REST API
@@ -133,10 +157,13 @@ export default function FloatingChatbot() {
   // Multi-turn Gemini history (separate from UI messages)
   const geminiHistoryRef = useRef<GeminiContent[]>([]);
 
-  // Auto-show notification bubble after 2s, hide after 8s
+  // Auto-show notification bubble after 2s, hide after 10s — with sound
   useEffect(() => {
     const showTimer = setTimeout(() => {
-      if (!isOpen) setShowNotification(true);
+      if (!isOpen) {
+        setShowNotification(true);
+        playChatNotifSound();
+      }
     }, 2000);
     notifTimerRef.current = setTimeout(() => {
       setShowNotification(false);
