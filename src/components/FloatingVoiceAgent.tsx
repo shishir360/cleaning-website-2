@@ -380,7 +380,7 @@ export default function FloatingVoiceAgent() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-24 z-[99] max-w-[220px] sm:max-w-[240px]"
+            className="fixed bottom-36 right-4 sm:bottom-24 sm:right-24 z-[99] max-w-[220px] sm:max-w-[240px]"
           >
             <div
               className="rounded-2xl shadow-2xl p-4 cursor-pointer relative overflow-hidden"
@@ -436,12 +436,12 @@ export default function FloatingVoiceAgent() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.94 }}
             transition={{ duration: 0.25, type: 'spring', stiffness: 260, damping: 22 }}
-            className="fixed bottom-20 right-20 sm:bottom-24 sm:right-24 w-[calc(100vw-3rem)] sm:w-[360px] z-[100] font-sans"
+            className="fixed inset-0 sm:inset-auto sm:bottom-20 sm:right-20 md:bottom-24 md:right-24 w-full sm:w-[360px] z-[100] font-sans flex flex-col"
             style={{ maxHeight: '90vh' }}
           >
             {/* Glass card */}
             <div
-              className="rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+              className="rounded-none sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col h-full sm:h-auto"
               style={{
                 background: 'linear-gradient(135deg, #0e1120ee 0%, #1a1f3cee 60%, #0e1120ee 100%)',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -618,7 +618,7 @@ export default function FloatingVoiceAgent() {
 
       {/* Floating Voice Button — sits left of the chatbot button */}
       <motion.button
-        className="fixed bottom-4 right-20 sm:bottom-6 sm:right-24 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center text-white z-[100]"
+        className="fixed bottom-[4.5rem] right-4 sm:bottom-6 sm:right-20 md:bottom-6 md:right-24 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center text-white z-[100]"
         style={{
           background: isOpen
             ? 'linear-gradient(135deg, #ef4444, #dc2626)'

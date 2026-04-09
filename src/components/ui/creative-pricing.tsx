@@ -44,16 +44,17 @@ function CreativePricing({
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 pt-4">
                 {tiers.map((tier, index) => (
                     <div
                         key={tier.name}
                         className={cn(
                             "relative group",
                             "transition-all duration-300",
-                            index === 0 && "rotate-[-1deg]",
-                            index === 1 && "rotate-[1deg]",
-                            index === 2 && "rotate-[-2deg]"
+                            "sm:rotate-[-1deg]",
+                            index === 0 && "sm:rotate-[-1deg]",
+                            index === 1 && "sm:rotate-[1deg]",
+                            index === 2 && "sm:rotate-[-2deg]"
                         )}
                     >
                         {/* Card shadow layer */}
@@ -134,7 +135,7 @@ function CreativePricing({
             </div>
 
             {/* Background decorations */}
-            <div className="absolute -z-10 inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -z-10 inset-0 overflow-hidden pointer-events-none hidden sm:block">
                 <div className="absolute top-40 left-8 text-4xl rotate-12 text-tertiary/20 select-none">✦</div>
                 <div className="absolute bottom-20 right-8 text-4xl -rotate-12 text-primary/10 select-none">◆</div>
             </div>

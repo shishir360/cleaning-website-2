@@ -407,7 +407,7 @@ export default function FloatingChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 w-[calc(100vw-2rem)] sm:w-[420px] h-[75vh] sm:h-[550px] max-h-[800px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden z-[100] font-sans"
+            className="fixed inset-0 sm:inset-auto sm:bottom-20 sm:right-4 md:bottom-24 md:right-6 w-full sm:w-[420px] h-full sm:h-[550px] sm:max-h-[80vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border sm:border-gray-100 flex flex-col overflow-hidden z-[100] font-sans"
           >
             {/* Header */}
             <div className="bg-primary p-4 text-white flex items-center justify-between relative overflow-hidden">

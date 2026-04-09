@@ -24,10 +24,10 @@ function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 md:px-8 py-6">
-      <div className="max-w-[1400px] mx-auto bg-inverted/80 backdrop-blur-xl border border-tertiary/20 shadow-sm rounded-none px-8 py-5 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto bg-inverted/80 backdrop-blur-xl border border-tertiary/20 shadow-sm rounded-none px-4 sm:px-8 py-3 sm:py-5 flex items-center justify-between">
         
         <TiltCard depth={25}>
-          <Link to="/" className="text-3xl font-serif tracking-widest text-primary font-semibold flex items-center gap-3 drop-shadow-xl hover:scale-105 transition-transform duration-300">
+          <Link to="/" className="text-xl sm:text-3xl font-serif tracking-widest text-primary font-semibold flex items-center gap-2 sm:gap-3 drop-shadow-xl hover:scale-105 transition-transform duration-300">
             {siteConfig.brand.logoUrl ? (
                <motion.img 
                   initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
@@ -36,12 +36,12 @@ function Header() {
                   transition={{ type: "spring", damping: 12, stiffness: 100 }}
                   src={siteConfig.brand.logoUrl} 
                   alt={siteConfig.brand.name} 
-                  className="h-10 object-contain drop-shadow-2xl [animation:float-3d_6s_ease-in-out_infinite]" 
+                  className="h-8 sm:h-10 object-contain drop-shadow-2xl [animation:float-3d_6s_ease-in-out_infinite]" 
                 />
             ) : (
                <span className="flex items-center justify-center h-10 w-10 border-2 border-dashed border-primary/40 rounded text-[9px] font-bold uppercase tracking-wide text-primary/50 leading-tight text-center px-1">Your Logo Here</span>
             )}
-            <span className="text-sm font-bold uppercase tracking-[0.15em] text-primary/70">{siteConfig.brand.name}</span>
+            <span className="text-[10px] sm:text-sm font-bold uppercase tracking-[0.1em] sm:tracking-[0.15em] text-primary/70 hidden xs:block sm:block truncate max-w-[100px] sm:max-w-none">{siteConfig.brand.name}</span>
           </Link>
         </TiltCard>
         
