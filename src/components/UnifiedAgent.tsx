@@ -52,7 +52,12 @@ function playToneNotification(type: 'chat' | 'voice') {
 }
 
 const SYSTEM_PROMPT = `You are a virtual assistant for Lumina Clean Services. Answer questions about cleaning services, pricing ($150 Standard, $250 Deep, $350 Move-In/Out), and availability in New York. You can book using book_appointment (needs Name, Phone, Date). Keep responses professional and brief.`;
-const VOICE_PROMPT = `You are Lumina's voice AI. Keep responses to 2-3 SHORT sentences maximum. No lists. Be conversational.`;
+const VOICE_PROMPT = `You are a human support artisan for Lumina Clean Services. 
+ACT LIKE A REAL PERSON ON THE PHONE.
+- Use casual fillers: "hmm", "uh", "right", "gotcha", "actually", "let's see".
+- Be friendly, warm, and brief (max 2 sentences).
+- If you're looking something up, say "Hmm, let me check that for you...".
+- Avoid sounding like an AI. No lists, no markers. Just smooth conversation.`;
 
 const TOOLS = [
   {
@@ -88,6 +93,7 @@ export default function UnifiedAgent() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatHistoryRef = useRef<GeminiContent[]>([]);
+  const voiceHistoryRef = useRef<GeminiContent[]>([]);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // Voice State
@@ -179,22 +185,39 @@ export default function UnifiedAgent() {
   };
 
   // ── Voice Agent Logic ──────────────────────────────────────────────────────
+  const playFiller = (type: 'thinking' | 'pickup' | 'listening') => {
+    if (!window.speechSynthesis) return;
+    const fillers = {
+      thinking: ["Hmm...", "Let's see...", "Right...", "I see...", "Actually..."],
+      pickup: ["Hello? Oh, hi there!", "Hey! This is the Lumina team. How can I help?", "Hi! Thanks for calling Lumina. What's on your mind?"],
+      listening: ["Uh-huh", "Yeah", "Right", "Got it"]
+    };
+    const pool = fillers[type];
+    const text = pool[Math.floor(Math.random() * pool.length)];
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.volume = 0.5; // Slightly quieter for fillers
+    utterance.rate = 1.1; // Natural speed
+    window.speechSynthesis.speak(utterance);
+  };
+
   const startVoiceCall = () => {
     setView('voice-active');
     setCallDuration(0);
     timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
     
-    // Initial greeting
-    const greeting = "Hello! I'm your Lumina assistant. How can I help you today?";
-    speakVoice(greeting, () => {
-      startListening();
-    });
+    // Natural delay for "Pickup"
+    setTimeout(() => {
+      playFiller('pickup');
+      // Give them a moment to respond after greeting
+      setTimeout(() => startListening(), 1500);
+    }, 1200);
   };
 
   const endVoiceCall = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (recognitionRef.current) recognitionRef.current.stop();
     window.speechSynthesis.cancel();
+    voiceHistoryRef.current = []; // Clear memory on end call
     setVoiceState('idle');
     setView('menu');
   };
@@ -216,8 +239,18 @@ export default function UnifiedAgent() {
     rec.onresult = async (e: any) => {
       const transcript = e.results[0][0].transcript;
       setVoiceState('thinking');
-      const data = await callAgent([], transcript, undefined, true);
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I missed that.";
+      // Immediate filler vocalization to bridge API lag
+      playFiller('thinking');
+      
+      const data = await callAgent(voiceHistoryRef.current, transcript, undefined, true);
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Hmm, I didn't quite catch that. Could you say it again?";
+      
+      // Update local memory
+      voiceHistoryRef.current.push(
+        { role: 'user', parts: [{ text: transcript }] },
+        { role: 'model', parts: [{ text: reply }] }
+      );
+
       speakVoice(reply, () => startListening());
     };
     rec.onerror = () => setVoiceState('idle');
