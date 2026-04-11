@@ -118,20 +118,29 @@ export const siteConfig = {
       { id: "guarantee", title: "Done Right Promise", text: "We'll return to fix it at no cost." }
     ],
     team: [
-      { name: "John D.", role: "Lead Cleaner", rating: "4.9", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop" },
-      { name: "Maria S.", role: "Deep Clean Spec.", rating: "5.0", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop" },
-      { name: "David L.", role: "Post-Const. Lead", rating: "4.9", img: "https://images.unsplash.com/photo-1590650153855-d9e808231d41?q=80&w=2070&auto=format&fit=crop" }
+      { name: "Kaelen", role: "Master Artisan", img: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1000&auto=format&fit=crop", rating: "5.0" },
+      { name: "Soren", role: "Precision Specialist", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop", rating: "4.9" },
+      { name: "Elara", role: "Surface Expert", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop", rating: "5.0" },
+      { name: "Silas", role: "Deep Clean Lead", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop", rating: "4.8" },
     ],
-    gallery: {
-      beforeAfter1: {
-        before: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070&auto=format&fit=crop",
-        after: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070&auto=format&fit=crop",
-        label: "Deep Clean"
+    workProof: [
+      {
+        title: "Kitchen Transformation",
+        before: "https://images.unsplash.com/photo-1556912177-d7df7c2f6671?q=80&w=1000&auto=format&fit=crop",
+        after: "https://images.unsplash.com/photo-1556911223-0530dfc3b588?q=80&w=1000&auto=format&fit=crop",
+        label: "Gourmet Kitchen"
       },
-      beforeAfter2: {
-        before: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-        after: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-        label: "Post-Const."
+      {
+        title: "Penthouse Revitalization",
+        before: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1000&auto=format&fit=crop",
+        after: "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?q=80&w=1000&auto=format&fit=crop",
+        label: "Living Space"
+      },
+      {
+        title: "Sanctuary Deep Clean",
+        before: "https://images.unsplash.com/photo-1507089947368-19c1da977535?q=80&w=1000&auto=format&fit=crop",
+        after: "https://images.unsplash.com/photo-1507652313519-d4511f0cae5a?q=80&w=1000&auto=format&fit=crop",
+        label: "Master Bedroom"
       }
     }
   },

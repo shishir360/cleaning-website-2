@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Star, MoveRight, ChevronDown, Shield, CheckCircle } from 'lucide-react';
+import { ArrowRight, Star, MoveRight, ChevronDown, Shield, CheckCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
 import { SEO } from '../components/SEO';
@@ -508,6 +508,91 @@ export default function HomePage() {
       <ImageHeavyServices />
       <StackedCardsSection />
       <BentoGallerySection />
+      {/* Social Proof - Results of Perfection */}
+      <section className="bg-primary py-32 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-tertiary/10 blur-[150px] rounded-full mix-blend-screen pointer-events-none"></div>
+        <div className="max-w-[1400px] mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-tertiary/20 bg-tertiary/5 text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-8"
+            >
+              <Sparkles className="w-3 h-3" /> Proof of Excellence
+            </motion.div>
+            <h2 className="font-serif text-5xl md:text-7xl text-inverted mb-6 tracking-tight">Results of Perfection.</h2>
+            <p className="text-xl text-inverted/60 font-light max-w-2xl mx-auto leading-relaxed">
+              Witness the meticulous transformations our artisans achieve across New York's most prestigious residences.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            <div className="space-y-8">
+              {siteConfig.socialProof.workProof.slice(0, 1).map((proof: any, i: number) => (
+                <BeforeAfterSliderItem 
+                  key={i}
+                  before={proof.before} 
+                  after={proof.after} 
+                  label={proof.label}
+                  initial={65}
+                />
+              ))}
+            </div>
+            <div className="space-y-8">
+               <h3 className="font-serif text-3xl text-tertiary mb-4">Meticulous Care.</h3>
+               <p className="text-inverted/70 font-light leading-relaxed text-lg">
+                 From restoration of rare marble finishes to the deep revitalization of fine upholstery, our data-backed cleanup protocols ensure your sanctuary is not just clean, but restored to its peak state.
+               </p>
+               <div className="grid grid-cols-2 gap-6 pt-6">
+                 <div className="p-6 bg-inverted/5 border border-tertiary/20 rounded-2xl">
+                    <p className="font-serif text-3xl text-tertiary mb-1">99.8%</p>
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-inverted/40">Dust Elimination</p>
+                 </div>
+                 <div className="p-6 bg-inverted/5 border border-tertiary/20 rounded-2xl">
+                    <p className="font-serif text-3xl text-tertiary mb-1">24k</p>
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-inverted/40">Hours Curated</p>
+                 </div>
+               </div>
+            </div>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 gap-8 mt-12">
+             {siteConfig.socialProof.workProof.slice(1).map((proof: any, i: number) => (
+                <BeforeAfterSliderItem 
+                  key={i}
+                  before={proof.before} 
+                  after={proof.after} 
+                  label={proof.label}
+                  initial={50}
+                  delay={0.2 * i}
+                  direction={i%2 === 0 ? "left" : "right"}
+                />
+              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Testimonials */}
+      <div className="bg-primary pt-20">
+         <Testimonials />
+      </div>
+
+      {/* Book Now Mini CTA */}
+      <section className="bg-primary py-32 border-t border-inverted/5">
+        <div className="max-w-4xl mx-auto px-6">
+          <TiltCard depth={5}>
+            <div className="bg-tertiary rounded-[3rem] p-12 sm:p-20 text-center relative overflow-hidden group">
+               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.2)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+               <h2 className="font-serif text-4xl sm:text-6xl text-primary mb-6 relative z-10 transition-transform group-hover:scale-105 duration-700">Ready for Perfection?</h2>
+               <p className="text-primary/70 font-bold uppercase tracking-[0.2em] text-xs sm:text-sm mb-10 relative z-10">Secure your elite artisanal cleaning today.</p>
+               <a href="/booking" className="inline-flex items-center gap-3 bg-primary text-inverted px-10 py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-inverted hover:text-primary transition-all relative z-10 shadow-2xl">
+                 Book Appointment <ArrowRight className="w-4 h-4" />
+               </a>
+            </div>
+          </TiltCard>
+        </div>
+      </section>
     </main>
   );
 }
