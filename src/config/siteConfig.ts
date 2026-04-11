@@ -25,6 +25,7 @@ export const siteConfig = {
     { label: "Home", path: "/" },
     { label: "Reviews", path: "/reviews" },
     { label: "Services", path: "/services" },
+    { label: "Team", path: "/team" },
     { label: "About Us", path: "/about" },
     { label: "Pricing", path: "/pricing" },
     { label: "Contact", path: "/contact" }

@@ -236,11 +236,11 @@ export default function BookingPage() {
                       {/* Segmented Controls for Beds/Baths mimicking image */}
                       <div className="bg-inverted rounded-2xl shadow-sm border border-black/5 p-2 overflow-hidden flex flex-col md:flex-row gap-4 justify-between items-center">
                          <span className="font-bold text-primary w-24 pl-4 text-sm tracking-widest uppercase">Bedroom</span>
-                         <div className="flex flex-wrap justify-center gap-2">
+                         <div className="grid grid-cols-3 sm:flex sm:flex-wrap justify-center gap-2 w-full pb-1">
                             {['Studio', 1, 2, 3, 4, 5].map(v => (
                               <button 
                                 key={v} onClick={() => setBedrooms(v as any)}
-                                className={`h-12 flex items-center justify-center font-medium rounded-xl transition-all ${bedrooms === v ? 'bg-primary text-inverted min-w-16 px-4' : 'bg-transparent text-secondary border hover:border-primary/20 min-w-12'}`}
+                                className={`h-11 flex items-center justify-center font-medium rounded-xl transition-all text-sm ${bedrooms === v ? 'bg-primary text-inverted' : 'bg-transparent text-secondary border hover:border-primary/20'}`}
                               >
                                 {v}
                               </button>
@@ -268,7 +268,7 @@ export default function BookingPage() {
                            onClick={() => setServiceType('standard')}
                            className={`relative bg-inverted rounded-2xl border-2 text-left origin-top transition-all duration-300 ${serviceType === 'standard' ? 'border-primary shadow-xl scale-[1.02]' : 'border-transparent shadow-sm hover:border-black/5'}`}
                          >
-                            {serviceType === 'standard' && <div className="absolute -top-3 -left-3 bg-tertiary text-primary rounded-full p-1"><CheckCircle2 className="w-5 h-5 fill-tertiary text-primary" /></div>}
+                            {serviceType === 'standard' && <div className="absolute top-2 right-2 bg-tertiary rounded-full p-0.5 z-10"><CheckCircle2 className="w-4 h-4 fill-tertiary text-primary" /></div>}
                             <div className={`w-full text-center py-2 text-xs font-bold uppercase tracking-widest ${serviceType === 'standard' ? 'bg-primary text-inverted' : 'bg-black/5 text-secondary'}`}>Our Go-To Clean</div>
                             <div className="p-6">
                               <h3 className="font-serif text-2xl text-primary mb-6">Standard</h3>
@@ -285,7 +285,7 @@ export default function BookingPage() {
                            onClick={() => setServiceType('deep')}
                            className={`relative bg-inverted rounded-2xl border-2 text-left origin-top transition-all duration-300 ${serviceType === 'deep' ? 'border-primary shadow-xl scale-[1.02]' : 'border-transparent shadow-sm hover:border-black/5'}`}
                          >
-                            {serviceType === 'deep' && <div className="absolute -top-3 -left-3 bg-tertiary text-primary rounded-full p-1"><CheckCircle2 className="w-5 h-5 fill-tertiary text-primary" /></div>}
+                            {serviceType === 'deep' && <div className="absolute top-2 right-2 bg-tertiary rounded-full p-0.5 z-10"><CheckCircle2 className="w-4 h-4 fill-tertiary text-primary" /></div>}
                             <div className={`w-full text-center py-2 text-xs font-bold uppercase tracking-widest ${serviceType === 'deep' ? 'bg-tertiary text-primary' : 'bg-tertiary/10 text-tertiary'}`}>Enhanced Essentials</div>
                             <div className="p-6">
                               <h3 className="font-serif text-2xl text-primary mb-6">Deep Clean</h3>

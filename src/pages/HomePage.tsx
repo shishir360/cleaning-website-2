@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Plus, ArrowRight, Star, MoveRight } from 'lucide-react';
+import { ArrowRight, Star, MoveRight, ChevronDown, Shield, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
 import { SEO } from '../components/SEO';
@@ -16,75 +16,133 @@ import InteractiveBentoGallery from '../components/ui/interactive-bento-gallery'
 
 function CinematicHero() {
   return (
-    <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden">
-      <img 
-        src={siteConfig.images.homeHero} 
-        className="absolute inset-0 w-full h-full object-cover scale-105" 
-        alt={`${siteConfig.brand.name} Hero`}
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-transparent"></div>
-      
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        <div className="lg:col-span-7 flex flex-col justify-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-none border border-tertiary/20 backdrop-blur-md bg-white/5 mb-8 w-max"
-          >
-            <Star className="w-4 h-4 text-tertiary fill-tertiary" />
-            <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-tertiary">#1 Ranked Service</span>
-          </motion.div>
-          
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-[7rem] xl:text-[7.5rem] text-inverted leading-[0.95] tracking-tight mb-6 sm:mb-8">
-            <ThreeDText text={siteConfig.brand.taglineHeading.split('.')[0] + '.'} wordMode={true} />
-            <br/>
-            <span className="text-tertiary italic font-light"><ThreeDText text={siteConfig.brand.name} delay={0.3} wordMode={true} /></span>
-          </h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-base sm:text-xl md:text-2xl text-inverted/80 max-w-xl mb-8 sm:mb-12 font-light leading-relaxed tracking-wide"
-          >
-            {siteConfig.brand.taglineSubheading}
-          </motion.p>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="lg:col-span-5 w-full flex justify-center lg:justify-end"
+    <section className="relative flex flex-col lg:min-h-[90vh] lg:flex-row lg:items-center lg:justify-center pt-20 sm:pt-24 lg:pt-0 overflow-hidden bg-primary">
+      {/* Video - relative on mobile to take up space, absolute on desktop to be background */}
+      <div className="relative lg:absolute lg:inset-0 w-full h-[45vh] sm:h-[55vh] lg:h-full overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={siteConfig.images.homeHero}
+          className="w-full h-full object-cover"
         >
-          <div className="bg-inverted p-5 sm:p-8 lg:p-10 rounded-[2rem] shadow-2xl border border-primary/5 w-full max-w-[420px] relative overflow-hidden group">
-            <h3 className="font-serif text-3xl text-primary mb-8">Reserve {siteConfig.brand.abbreviation}</h3>
+          <source src="/hero-video.mp4" type="video/mp4" />
+          <img
+            src={siteConfig.images.homeHero}
+            className="w-full h-full object-cover"
+            alt={`${siteConfig.brand.name} Hero`}
+          />
+        </video>
+        
+        {/* Gradients - only visible when video is background (lg) or subtle overlay on mobile */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden pointer-events-none" />
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-black/70 via-black/20 to-transparent pointer-events-none" />
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+      </div>
+
+      {/* Booking card - follows video on mobile, floats on desktop */}
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 flex justify-center lg:justify-end items-center py-10 lg:py-0">
+        <motion.div
+          initial={{ opacity: 0, y: 30, x: 0 }}
+          whileInView={{ opacity: 1, y: 0, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="w-full max-w-[400px]"
+        >
+          {/* Card */}
+          <div className="bg-primary/95 backdrop-blur-2xl border border-tertiary/30 shadow-[0_32px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(192,160,98,0.1)] w-full relative overflow-hidden">
             
-            <div className="space-y-4 mb-8">
-              <div className="relative">
-                <select defaultValue="" className="w-full bg-paper appearance-none p-4 rounded-xl border border-primary/5 text-primary focus:outline-none focus:ring-1 focus:ring-tertiary/50 cursor-pointer text-sm">
-                  <option value="" disabled hidden>{siteConfig.bookingLogic.sizeMultiplierLabel}</option>
-                  {siteConfig.bookingLogic.sizeOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <Plus className="w-5 h-5 text-primary/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            {/* Gold top accent line */}
+            <div className="h-[2px] bg-gradient-to-r from-tertiary/60 via-tertiary to-tertiary/60" />
+
+            {/* Card header */}
+            <div className="px-7 pt-7 pb-5 border-b border-inverted/10">
+              <div className="flex items-center gap-2 mb-1">
+                <Star className="w-3.5 h-3.5 text-tertiary fill-tertiary" />
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-tertiary">#1 Rated Service</span>
               </div>
-              <div className="relative">
-                <select defaultValue="" className="w-full bg-paper appearance-none p-4 rounded-xl border border-primary/5 text-primary focus:outline-none focus:ring-1 focus:ring-tertiary/50 cursor-pointer text-sm">
-                  <option value="" disabled hidden>Level of Curation</option>
-                  {siteConfig.services.map(service => (
-                     <option key={service.id} value={service.slug}>{service.title}</option>
-                  ))}
-                </select>
-                <Plus className="w-5 h-5 text-primary/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <h3 className="font-serif text-2xl sm:text-3xl text-inverted leading-tight">
+                Book Your Clean
+              </h3>
+              <p className="text-inverted/50 text-xs font-light mt-1 tracking-wide">Instant quote • No commitment</p>
+            </div>
+
+            {/* Form fields */}
+            <div className="px-7 py-6 space-y-3">
+              {/* Size select */}
+              <div className="relative group">
+                <label className="block text-[9px] uppercase tracking-[0.25em] font-bold text-tertiary/80 mb-1.5">Home Size</label>
+                <div className="relative">
+                  <select
+                    defaultValue=""
+                    className="w-full bg-inverted/5 hover:bg-inverted/10 appearance-none px-4 py-3.5 border border-inverted/15 hover:border-tertiary/50 focus:border-tertiary text-inverted/80 focus:outline-none cursor-pointer text-sm transition-all duration-200 focus:bg-inverted/10"
+                  >
+                    <option value="" disabled hidden style={{background:'#050505'}}>{siteConfig.bookingLogic.sizeMultiplierLabel}</option>
+                    {siteConfig.bookingLogic.sizeOptions.map(opt => (
+                      <option key={opt.value} value={opt.value} style={{background:'#050505'}}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-tertiary/60 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Service select */}
+              <div className="relative group">
+                <label className="block text-[9px] uppercase tracking-[0.25em] font-bold text-tertiary/80 mb-1.5">Service Type</label>
+                <div className="relative">
+                  <select
+                    defaultValue=""
+                    className="w-full bg-inverted/5 hover:bg-inverted/10 appearance-none px-4 py-3.5 border border-inverted/15 hover:border-tertiary/50 focus:border-tertiary text-inverted/80 focus:outline-none cursor-pointer text-sm transition-all duration-200 focus:bg-inverted/10"
+                  >
+                    <option value="" disabled hidden style={{background:'#050505'}}>Select a service</option>
+                    {siteConfig.services.map(service => (
+                      <option key={service.id} value={service.slug} style={{background:'#050505'}}>{service.title}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-tertiary/60 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="pt-2"
+              >
+                <Link
+                  to="/booking"
+                  className="group w-full bg-tertiary text-primary font-bold tracking-[0.25em] uppercase text-[11px] py-4 hover:bg-inverted transition-all duration-400 text-center flex items-center justify-center gap-3 shadow-[0_8px_32px_rgba(192,160,98,0.4)] hover:shadow-[0_8px_40px_rgba(255,255,255,0.2)] relative overflow-hidden"
+                >
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative">Book Now</span>
+                  <ArrowRight className="w-3.5 h-3.5 relative group-hover:translate-x-1 transition-transform duration-300" />
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Trust badges */}
+            <div className="px-7 pb-6 border-t border-inverted/10 pt-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3.5 h-3.5 text-tertiary flex-shrink-0" />
+                  <span className="text-[10px] text-inverted/50 font-light">Insured & Vetted</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3.5 h-3.5 text-tertiary flex-shrink-0" />
+                  <span className="text-[10px] text-inverted/50 font-light">Eco-Friendly</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-3.5 h-3.5 text-tertiary flex-shrink-0" />
+                  <span className="text-[10px] text-inverted/50 font-light">100% Satisfaction</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-3.5 h-3.5 text-tertiary fill-tertiary flex-shrink-0" />
+                  <span className="text-[10px] text-inverted/50 font-light">5-Star Rated</span>
+                </div>
               </div>
             </div>
-            
-            <Link to="/booking" className="w-full bg-primary text-inverted font-bold tracking-[0.2em] uppercase text-xs rounded-none py-5 hover:bg-tertiary hover:text-primary transition-all duration-500 text-center flex items-center justify-center gap-3">
-              Acquire Quote <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </motion.div>
       </div>
@@ -122,7 +180,7 @@ function TrustBadges() {
 
 function MeetTheProfessionals() {
   return (
-    <section className="py-16 sm:py-24 lg:py-32 bg-paper relative overflow-hidden">
+    <section id="team" className="py-16 sm:py-24 lg:py-32 bg-paper relative overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6">
         <div className="flex flex-col lg:flex-row justify-between items-end mb-10 lg:mb-16 gap-6 lg:gap-8">
           <div className="max-w-2xl">
@@ -134,10 +192,11 @@ function MeetTheProfessionals() {
           <p className="text-secondary text-lg font-light max-w-sm">We reject the gig-economy. Our cleaners are fully retained, heavily vetted specialists who take absolute pride in their craft.</p>
         </div>
 
-        <div className="relative w-full overflow-hidden -mx-6 px-6 py-4">
+        {/* Desktop View: Infinite Slider */}
+        <div className="hidden sm:block relative w-full overflow-hidden -mx-6 px-6 py-4">
           <InfiniteSlider duration={40} gap={32} className="flex h-full w-full pb-8">
             {siteConfig.socialProof.team.map((member, i) => (
-              <div key={i} className="w-[280px] sm:w-[320px] md:w-[380px] shrink-0 h-full">
+              <div key={i} className="w-[320px] md:w-[380px] shrink-0 h-full">
                <TiltCard depth={15} className="h-full">
                 <motion.div 
                   initial={{ opacity: 0, y: 40 }}
@@ -146,14 +205,13 @@ function MeetTheProfessionals() {
                   transition={{ delay: i * 0.15, duration: 0.8 }}
                   className="bg-inverted rounded-[2.5rem] overflow-hidden luxury-shadow-3d group border border-tertiary/10 relative h-full"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-[2s] pointer-events-none z-10"></div>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary/90 to-transparent p-6 pt-24 text-inverted translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 z-20">
+                     <div className="flex items-center gap-1 mb-1 text-tertiary">
+                       <Star className="w-4 h-4 fill-tertiary" /><span className="text-sm font-bold tracking-wider text-inverted ml-1">{member.rating} Elite Rating</span>
+                     </div>
+                  </div>
                   <div className="aspect-[3/4] overflow-hidden relative">
                     <img src={member.img} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[2s] scale-105 group-hover:scale-100" />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary/90 to-transparent p-6 pt-24 text-inverted translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 z-20">
-                       <div className="flex items-center gap-1 mb-1 text-tertiary">
-                         <Star className="w-4 h-4 fill-tertiary" /><span className="text-sm font-bold tracking-wider text-inverted ml-1">{member.rating} Elite Rating</span>
-                       </div>
-                    </div>
                   </div>
                   <div className="p-8 pb-10 relative z-20" style={{ transform: "translateZ(40px)" }}>
                     <h3 className="font-serif text-3xl text-primary mb-1">{member.name}</h3>
@@ -164,20 +222,42 @@ function MeetTheProfessionals() {
               </div>
             ))}
           </InfiniteSlider>
-          <ProgressiveBlur
-            className="pointer-events-none absolute top-0 left-0 h-full w-[100px] md:w-[200px] z-20"
-            direction="left"
-            blurIntensity={1.5}
-          />
-          <ProgressiveBlur
-            className="pointer-events-none absolute top-0 right-0 h-full w-[100px] md:w-[200px] z-20"
-            direction="right"
-            blurIntensity={1.5}
-          />
+          <ProgressiveBlur className="pointer-events-none absolute top-0 left-0 h-full w-[100px] md:w-[200px] z-20" direction="left" />
+          <ProgressiveBlur className="pointer-events-none absolute top-0 right-0 h-full w-[100px] md:w-[200px] z-20" direction="right" />
+        </div>
+
+        {/* Mobile View: Native Snap Scroll */}
+        <div className="sm:hidden -mx-6 px-6 py-4 overflow-x-auto snap-x snap-mandatory flex gap-6 no-scrollbar pb-10">
+          {siteConfig.socialProof.team.map((member, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="w-[85vw] shrink-0 snap-center"
+            >
+              <div className="bg-inverted rounded-[2.5rem] overflow-hidden luxury-shadow-3d border border-tertiary/10 h-full">
+                <div className="aspect-[4/5] overflow-hidden relative">
+                  <img src={member.img} alt={member.name} className="w-full h-full object-cover" />
+                  <div className="absolute top-4 right-4 z-20">
+                      <div className="bg-primary/80 backdrop-blur-md border border-tertiary/40 px-3 py-1 rounded-full flex items-center gap-2">
+                        <Star className="w-3 h-3 fill-tertiary text-tertiary" />
+                        <span className="text-inverted text-[10px] font-bold tracking-widest uppercase">{member.rating}</span>
+                      </div>
+                    </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="font-serif text-2xl text-primary mb-0.5">{member.name}</h3>
+                  <p className="text-tertiary font-bold tracking-widest text-[10px] uppercase mb-4">{member.role}</p>
+                  <p className="text-secondary/60 text-sm font-light leading-relaxed">Top-rated specialist in NYC with consistent 5-star perfection.</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function BeforeAfterSliderItem({ before, after, label, initial = 50, delay = 0, direction = "left" }: any) {

@@ -2,8 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Phone, ArrowRight, Share2, MessageCircle, Link as LinkIcon, Globe, Feather, Send, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import FloatingChatbot from './FloatingChatbot';
-import FloatingVoiceAgent from './FloatingVoiceAgent';
+import UnifiedAgent from './UnifiedAgent';
 import { NavHeader } from './ui/nav-header';
 import { TiltCard } from './ui/TiltCard';
 
@@ -23,77 +22,111 @@ function Header() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-4 md:px-8 py-6">
-      <div className="max-w-[1400px] mx-auto bg-inverted/80 backdrop-blur-xl border border-tertiary/20 shadow-sm rounded-none px-4 sm:px-8 py-3 sm:py-5 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Main nav bar — dark glass matching the site's primary palette */}
+      <div className="bg-primary/95 backdrop-blur-xl border-b border-tertiary/20 shadow-[0_4px_40px_rgba(0,0,0,0.4)] px-4 sm:px-8 py-0 flex items-center justify-between h-[70px] sm:h-[80px]">
         
-        <TiltCard depth={25}>
-          <Link to="/" className="text-xl sm:text-3xl font-serif tracking-widest text-primary font-semibold flex items-center gap-2 sm:gap-3 drop-shadow-xl hover:scale-105 transition-transform duration-300">
+        {/* Logo */}
+        <TiltCard depth={20}>
+          <Link
+            to="/"
+            className="flex items-center gap-2 sm:gap-3 group"
+          >
             {siteConfig.brand.logoUrl ? (
-               <motion.img 
-                  initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
-                  animate={{ rotateY: 0, opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.1, rotateY: 180, transition: { duration: 0.8 } }}
-                  transition={{ type: "spring", damping: 12, stiffness: 100 }}
-                  src={siteConfig.brand.logoUrl} 
-                  alt={siteConfig.brand.name} 
-                  className="h-8 sm:h-10 object-contain drop-shadow-2xl [animation:float-3d_6s_ease-in-out_infinite]" 
-                />
+              <motion.img
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.08, transition: { duration: 0.4 } }}
+                transition={{ type: 'spring', damping: 14, stiffness: 120 }}
+                src={siteConfig.brand.logoUrl}
+                alt={siteConfig.brand.name}
+                className="h-7 sm:h-9 object-contain invert drop-shadow-[0_0_12px_rgba(192,160,98,0.5)]"
+              />
             ) : (
-               <span className="flex items-center justify-center h-10 w-10 border-2 border-dashed border-primary/40 rounded text-[9px] font-bold uppercase tracking-wide text-primary/50 leading-tight text-center px-1">Your Logo Here</span>
+              <span className="flex items-center justify-center h-9 w-9 border border-dashed border-tertiary/40 text-[8px] font-bold uppercase tracking-wide text-tertiary/60 leading-tight text-center px-1">
+                Logo
+              </span>
             )}
-            <span className="text-[10px] sm:text-sm font-bold uppercase tracking-[0.1em] sm:tracking-[0.15em] text-primary/70 hidden xs:block sm:block truncate max-w-[100px] sm:max-w-none">{siteConfig.brand.name}</span>
+            <span className="font-serif text-base sm:text-lg tracking-[0.12em] text-inverted group-hover:text-tertiary transition-colors duration-300">
+              {siteConfig.brand.name}
+            </span>
           </Link>
         </TiltCard>
-        
+
+        {/* Desktop Nav */}
         <NavHeader />
-        
-        <div className="flex items-center gap-4">
-          <div className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary border-r border-tertiary/30 pr-6">
-             <Phone className="w-4 h-4 text-tertiary" /> {siteConfig.contact.phone}
+
+        {/* Right side — phone + CTA + hamburger */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-inverted/60 border-r border-tertiary/25 pr-5">
+            <Phone className="w-3.5 h-3.5 text-tertiary" />
+            {siteConfig.contact.phone}
           </div>
-          <Link to="/booking" className="hidden sm:inline-block bg-primary text-inverted px-6 py-3 rounded-none text-xs font-bold uppercase tracking-[0.2em] hover:bg-tertiary transition-colors duration-500 shadow-md">
-            Acquire Quote
-          </Link>
-          <button 
-            className="md:hidden p-2 text-primary focus:outline-none z-[60] relative"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          <Link
+            to="/booking"
+            className="hidden sm:inline-flex items-center gap-2 bg-tertiary text-primary px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-inverted transition-all duration-300 shadow-[0_0_20px_rgba(192,160,98,0.3)] hover:shadow-[0_0_30px_rgba(192,160,98,0.5)]"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6 text-inverted" /> : <Menu className="w-6 h-6" />}
+            Book Now <ArrowRight className="w-3 h-3" />
+          </Link>
+          <button
+            className="md:hidden p-2 text-inverted focus:outline-none z-[60] relative"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen
+              ? <X className="w-5 h-5 text-tertiary" />
+              : <Menu className="w-5 h-5" />
+            }
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Thin gold accent line under header */}
+      <div className="h-[1px] bg-gradient-to-r from-transparent via-tertiary/50 to-transparent" />
+
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 min-h-screen bg-primary z-[55] flex flex-col pt-32 px-8 pb-12 overflow-y-auto"
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="fixed inset-0 min-h-screen bg-primary z-[55] flex flex-col pt-[90px] px-8 pb-12 overflow-y-auto"
           >
-            <nav className="flex flex-col gap-6">
-              {siteConfig.navLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-inverted text-3xl font-serif tracking-widest hover:text-tertiary transition-colors border-b border-white/10 pb-4"
+            {/* Gold separator */}
+            <div className="h-px bg-gradient-to-r from-transparent via-tertiary/60 to-transparent mb-10" />
+
+            <nav className="flex flex-col gap-2">
+              {siteConfig.navLinks.map((link, i) => (
+                <motion.div
+                  key={link.path}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06 }}
                 >
-                  {link.label}
-                </Link>
+                  <Link
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between text-inverted text-2xl sm:text-3xl font-serif tracking-widest hover:text-tertiary transition-colors border-b border-inverted/10 py-5"
+                  >
+                    {link.label}
+                    <ArrowRight className="w-5 h-5 text-tertiary/50" />
+                  </Link>
+                </motion.div>
               ))}
-              <Link 
-                  to="/booking" 
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                <Link
+                  to="/booking"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="mt-8 bg-tertiary text-primary px-8 py-5 text-center text-sm font-bold uppercase tracking-[0.2em] hover:bg-white shadow-xl transition-colors duration-500"
-              >
-                  Acquire Quote
-              </Link>
-              <div className="pt-12 text-center text-tertiary text-sm font-bold tracking-widest">
-                <Phone className="w-4 h-4 inline-block mr-2" /> {siteConfig.contact.phone}
-              </div>
+                  className="mt-8 block bg-tertiary text-primary px-8 py-5 text-center text-sm font-bold uppercase tracking-[0.25em] hover:bg-inverted shadow-xl transition-all duration-300"
+                >
+                  Book Now
+                </Link>
+                <div className="pt-8 text-center text-tertiary/80 text-xs font-bold tracking-widest flex items-center justify-center gap-2">
+                  <Phone className="w-3.5 h-3.5" /> {siteConfig.contact.phone}
+                </div>
+              </motion.div>
             </nav>
           </motion.div>
         )}
@@ -194,8 +227,7 @@ export default function Layout() {
         <Outlet />
       </AnimatePresence>
       <Footer />
-      <FloatingVoiceAgent />
-      <FloatingChatbot />
+      <UnifiedAgent />
     </div>
   );
 }

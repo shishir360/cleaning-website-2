@@ -13,7 +13,7 @@ export function NavHeader() {
 
   return (
     <ul
-      className="relative mx-auto hidden md:flex w-fit rounded-full border border-white/40 bg-white/70 backdrop-blur-xl p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5"
+      className="relative mx-auto hidden md:flex w-fit p-1.5"
       onMouseLeave={() => setPosition((pv) => ({ ...pv, opacity: 0 }))}
     >
       {siteConfig.navLinks.map((link) => (
@@ -55,7 +55,7 @@ const Tab = ({
           left: ref.current.offsetLeft,
         });
       }}
-      className={`relative z-10 block cursor-pointer px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 md:px-7 md:py-3.5 ${isActive ? 'text-primary' : 'text-primary/60 hover:text-primary/90'}`}
+      className={`relative z-10 block cursor-pointer px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 md:px-6 md:py-3 ${isActive ? 'text-tertiary' : 'text-inverted/60 hover:text-inverted'}`}
     >
       <Link to={to} className="w-full h-full block">
         {children}
@@ -68,7 +68,7 @@ const Cursor = ({ position }: { position: any }) => {
   return (
     <motion.li
       animate={position}
-      className="absolute z-0 h-10 rounded-full bg-gradient-to-tr from-[#d4af37]/20 to-tertiary/40 border border-tertiary/50 md:h-[46px] pointer-events-none shadow-[inset_0_1px_3px_rgba(255,255,255,0.4)] mix-blend-multiply"
+      className="absolute z-0 h-9 md:h-10 rounded-none bg-tertiary/15 border border-tertiary/40 pointer-events-none"
     />
   );
 };
