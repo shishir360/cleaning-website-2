@@ -12,10 +12,13 @@ import { ProgressiveBlur } from '../components/ui/progressive-blur';
 import { Testimonials } from '../components/Testimonials';
 import { FAQ } from '../components/FAQ';
 import { StackedCardsInteractionDemo } from '../components/StackedCardsDemo';
+import { LuxurySelect } from '../components/ui/LuxurySelect';
 import InteractiveBentoGallery from '../components/ui/interactive-bento-gallery';
 
 function CinematicHero() {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [homeSize, setHomeSize] = useState("");
+  const [serviceType, setServiceType] = useState("");
 
   return (
     <section className="relative flex flex-col lg:min-h-[90vh] lg:flex-row lg:items-center lg:justify-center pt-20 sm:pt-24 lg:pt-0 overflow-hidden bg-primary">
@@ -59,7 +62,11 @@ function CinematicHero() {
           className="w-full max-w-[400px]"
         >
           {/* Card */}
-          <div className="bg-primary/95 backdrop-blur-2xl border border-tertiary/30 shadow-[0_32px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(192,160,98,0.1)] w-full relative overflow-hidden">
+          <div className="bg-primary/95 backdrop-blur-3xl border border-tertiary/30 shadow-[0_32px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(192,160,98,0.1)] w-full relative overflow-hidden group">
+            
+            {/* Metal Texture/Radial Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(192,160,98,0.1)_0%,transparent_60%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(192,160,98,0.05)_0%,transparent_50%)] pointer-events-none" />
             
             {/* Gold top accent line */}
             <div className="h-[2px] bg-gradient-to-r from-tertiary/60 via-tertiary to-tertiary/60" />
@@ -77,40 +84,24 @@ function CinematicHero() {
             </div>
 
             {/* Form fields */}
-            <div className="px-7 py-6 space-y-3">
+            <div className="px-7 py-7 space-y-5 relative z-10">
               {/* Size select */}
-              <div className="relative group">
-                <label className="block text-[9px] uppercase tracking-[0.25em] font-bold text-tertiary/80 mb-1.5">Home Size</label>
-                <div className="relative">
-                  <select
-                    defaultValue=""
-                    className="w-full bg-inverted/5 hover:bg-inverted/10 appearance-none px-4 py-3.5 border border-inverted/15 hover:border-tertiary/50 focus:border-tertiary text-inverted/80 focus:outline-none cursor-pointer text-sm transition-all duration-200 focus:bg-inverted/10"
-                  >
-                    <option value="" disabled hidden style={{background:'#050505'}}>{siteConfig.bookingLogic.sizeMultiplierLabel}</option>
-                    {siteConfig.bookingLogic.sizeOptions.map(opt => (
-                      <option key={opt.value} value={opt.value} style={{background:'#050505'}}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-tertiary/60 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
+              <LuxurySelect 
+                label="Home Size"
+                options={siteConfig.bookingLogic.sizeOptions}
+                value={homeSize}
+                onChange={setHomeSize}
+                placeholder={siteConfig.bookingLogic.sizeMultiplierLabel}
+              />
 
               {/* Service select */}
-              <div className="relative group">
-                <label className="block text-[9px] uppercase tracking-[0.25em] font-bold text-tertiary/80 mb-1.5">Service Type</label>
-                <div className="relative">
-                  <select
-                    defaultValue=""
-                    className="w-full bg-inverted/5 hover:bg-inverted/10 appearance-none px-4 py-3.5 border border-inverted/15 hover:border-tertiary/50 focus:border-tertiary text-inverted/80 focus:outline-none cursor-pointer text-sm transition-all duration-200 focus:bg-inverted/10"
-                  >
-                    <option value="" disabled hidden style={{background:'#050505'}}>Select a service</option>
-                    {siteConfig.services.map(service => (
-                      <option key={service.id} value={service.slug} style={{background:'#050505'}}>{service.title}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-tertiary/60 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
+              <LuxurySelect 
+                label="Service Type"
+                options={siteConfig.services.map(s => ({ label: s.title, value: s.slug }))}
+                value={serviceType}
+                onChange={setServiceType}
+                placeholder="Select a service"
+              />
 
               {/* CTA Button */}
               <motion.div
@@ -120,11 +111,19 @@ function CinematicHero() {
               >
                 <Link
                   to="/booking"
-                  className="group w-full bg-tertiary text-primary font-bold tracking-[0.25em] uppercase text-[11px] py-4 hover:bg-inverted transition-all duration-400 text-center flex items-center justify-center gap-3 shadow-[0_8px_32px_rgba(192,160,98,0.4)] hover:shadow-[0_8px_40px_rgba(255,255,255,0.2)] relative overflow-hidden"
+                  className="group w-full bg-tertiary text-primary font-bold tracking-[0.25em] uppercase text-[11px] py-4.5 hover:bg-inverted hover:text-white transition-all duration-400 text-center flex items-center justify-center gap-3 shadow-[0_8px_32px_rgba(192,160,98,0.4)] hover:shadow-[0_0_40px_rgba(192,160,98,0.6)] relative overflow-hidden"
                 >
-                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative">Book Now</span>
-                  <ArrowRight className="w-3.5 h-3.5 relative group-hover:translate-x-1 transition-transform duration-300" />
+                  <motion.div 
+                    animate={{ 
+                      opacity: [0.3, 0.6, 0.3],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="absolute inset-0 bg-[#c0a062] blur-xl"
+                  />
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                  <span className="relative z-10">Book Now</span>
+                  <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
                 </Link>
               </motion.div>
             </div>
