@@ -157,7 +157,7 @@ export const siteConfig = {
 
   // 7. CORE IMAGES
   images: {
-    homeHero: "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2000&auto=format&fit=crop",
+    homeHero: "/hero-poster.png",
     aboutHero: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2000&auto=format&fit=crop",
     pricingHero: "https://images.unsplash.com/photo-1600607688969-a5bfcd64bd40?q=80&w=2000&auto=format&fit=crop",
     servicesHero: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000&auto=format&fit=crop",

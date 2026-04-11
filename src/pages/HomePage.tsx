@@ -15,6 +15,8 @@ import { StackedCardsInteractionDemo } from '../components/StackedCardsDemo';
 import InteractiveBentoGallery from '../components/ui/interactive-bento-gallery';
 
 function CinematicHero() {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   return (
     <section className="relative flex flex-col lg:min-h-[90vh] lg:flex-row lg:items-center lg:justify-center pt-20 sm:pt-24 lg:pt-0 overflow-hidden bg-primary">
       {/* Video - relative on mobile to take up space, absolute on desktop to be background */}
@@ -25,21 +27,26 @@ function CinematicHero() {
           loop
           playsInline
           preload="auto"
-          poster={siteConfig.images.homeHero}
-          className="w-full h-full object-cover"
+          poster="/hero-poster.png"
+          onCanPlay={() => setVideoLoaded(true)}
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
-          <img
-            src={siteConfig.images.homeHero}
-            className="w-full h-full object-cover"
-            alt={`${siteConfig.brand.name} Hero`}
-          />
         </video>
         
+        {/* Poster Image (Shown while video is loading) */}
+        {!videoLoaded && (
+          <img 
+            src="/hero-poster.png" 
+            className="absolute inset-0 w-full h-full object-cover z-0" 
+            alt="Loading..."
+          />
+        )}
+        
         {/* Gradients - only visible when video is background (lg) or subtle overlay on mobile */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden pointer-events-none" />
-        <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-black/70 via-black/20 to-transparent pointer-events-none" />
-        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden pointer-events-none z-10" />
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-black/70 via-black/20 to-transparent pointer-events-none z-10" />
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-10" />
       </div>
 
       {/* Booking card - follows video on mobile, floats on desktop */}
