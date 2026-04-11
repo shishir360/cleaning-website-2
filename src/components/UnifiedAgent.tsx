@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   MessageSquare, X, Send, Sparkles, Loader2, Mic, MicOff, 
   Volume2, VolumeX, CheckCircle2, Bot, Phone, PhoneOff, 
-  ChevronDown, Mail, MessageCircle, ArrowLeft, Play, Pause
+  ChevronDown, Mail, MessageCircle, ArrowLeft, Play, Pause, Star
 } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 
@@ -113,7 +113,6 @@ export default function UnifiedAgent() {
   const recognitionRef = useRef<any>(null);
   const isAgentSpeaking = useRef(false);
   const isProcessingSpeech = useRef(false);
-  const timerRef.current = null;
   const timerInstanceRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
