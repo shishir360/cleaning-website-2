@@ -168,9 +168,10 @@ function Footer() {
              </div>
              <div className="space-y-4 text-sm">
                 <span className="block font-bold uppercase tracking-[0.2em] text-xs mb-6 text-inverted">Company</span>
-                <Link to="/about" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">The Firm</Link>
-                <Link to="/pricing" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">Investment & FAQ</Link>
-                <Link to="/contact" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">Concierge</Link>
+                 <Link to="/about" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">The Firm</Link>
+                 <Link to="/team" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">Our Artisans</Link>
+                 <Link to="/pricing" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">Investment & FAQ</Link>
+                 <Link to="/contact" className="text-inverted/60 hover:text-tertiary block duration-150 font-light text-sm">Concierge</Link>
              </div>
              <div className="space-y-4 text-sm">
                 <Link to="/locations"><span className="block font-bold uppercase tracking-[0.2em] text-xs mb-6 text-inverted hover:text-tertiary transition-colors">Service Areas</span></Link>
