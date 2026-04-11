@@ -23,13 +23,13 @@ type GeminiResponse = { candidates?: Array<{ content: GeminiContent; finishReaso
 type ViewState = 'closed' | 'menu' | 'chat' | 'voice-start' | 'voice-active' | 'contact-choice';
 
 // ─── Audio Helpers ───────────────────────────────────────────────────────────
-function playToneNotification(type: 'chat' | 'voice') {
+function playToneNotification(type: 'chat' | 'voice' | 'ring' | 'connect') {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const play = (freq: number, start: number, dur: number, g: number) => {
+    const play = (freq: number, start: number, dur: number, g: number, wave: OscillatorType = 'sine') => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = type === 'chat' ? 'sine' : 'triangle';
+      osc.type = wave;
       osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
       gain.gain.setValueAtTime(0, ctx.currentTime + start);
       gain.gain.linearRampToValueAtTime(g, ctx.currentTime + start + 0.01);
@@ -39,25 +39,35 @@ function playToneNotification(type: 'chat' | 'voice') {
       osc.start(ctx.currentTime + start);
       osc.stop(ctx.currentTime + start + dur);
     };
+
     if (type === 'chat') {
       play(523.25, 0, 0.35, 0.15);
       play(659.25, 0.18, 0.45, 0.12);
-    } else {
+    } else if (type === 'voice') {
       play(392, 0, 0.22, 0.12);
       play(493.88, 0.2, 0.22, 0.12);
       play(587.33, 0.4, 0.32, 0.15);
+    } else if (type === 'ring') {
+      // Classic professional ring tone
+      play(440, 0, 1.2, 0.05, 'sine');
+      play(480, 0, 1.2, 0.05, 'sine');
+    } else if (type === 'connect') {
+      // Handoff beep
+      play(880, 0, 0.1, 0.1);
+      play(1108.73, 0.15, 0.2, 0.08);
     }
-    setTimeout(() => ctx.close(), 1200);
+    setTimeout(() => ctx.close(), 2000);
   } catch { /* fail silent */ }
 }
 
 const SYSTEM_PROMPT = `You are a virtual assistant for Lumina Clean Services. Answer questions about cleaning services, pricing ($150 Standard, $250 Deep, $350 Move-In/Out), and availability in New York. You can book using book_appointment (needs Name, Phone, Date). Keep responses professional and brief.`;
 const VOICE_PROMPT = `You are a human support artisan for Lumina Clean Services. 
 ACT LIKE A REAL PERSON ON THE PHONE.
-- Use casual fillers: "hmm", "uh", "right", "gotcha", "actually", "let's see".
-- Be friendly, warm, and brief (max 2 sentences).
-- If you're looking something up, say "Hmm, let me check that for you...".
-- Avoid sounding like an AI. No lists, no markers. Just smooth conversation.`;
+- ABSOLUTELY ESSENTIAL: Use human fillers in EVERY response: "Hmm...", "Let's see...", "Gotcha", "Uh-huh", "Right".
+- When "thinking" or "checking", literally say: "Hmm, one moment...", or "Let me check that for you...".
+- Be professional but warm. Brief responses (1-2 sentences).
+- If asked about prices: Standard is $150, Deep is $250, Move-In is $350.
+- Avoid sounding like an AI. No generic "How can I help you today?". Use "Hey! Glad you called. What's up?" or similar.`;
 
 const TOOLS = [
   {
@@ -191,30 +201,48 @@ export default function UnifiedAgent() {
   const playFiller = (type: 'thinking' | 'pickup' | 'listening') => {
     if (!window.speechSynthesis) return;
     const fillers = {
-      thinking: ["Hmm...", "Let's see...", "Right...", "I see...", "Actually..."],
-      pickup: ["Hello? Oh, hi there!", "Hey! This is the Lumina team. How can I help?", "Hi! Thanks for calling Lumina. What's on your mind?"],
-      listening: ["Uh-huh", "Yeah", "Right", "Got it"]
+      thinking: ["Hmm, let me see...", "Actually...", "Right, let me check that...", "Hmm, interesting...", "Gotcha, let's see..."],
+      pickup: ["Hello? Oh, hi! This is the Lumina concierge. How can I help you today?", "Hey! Thanks for calling Lumina. What's on your mind?", "Hi there! Glad you reached out. How's your day going?"],
+      listening: ["Uh-huh", "Yeah", "Right", "Got it", "Interesting"]
     };
     const pool = fillers[type];
     const text = pool[Math.floor(Math.random() * pool.length)];
+    
+    // Cancel previous to ensure instant response
+    window.speechSynthesis.cancel();
+    
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = 0.5; // Slightly quieter for fillers
-    utterance.rate = 1.1; // Natural speed
+    utterance.volume = 0.6;
+    utterance.rate = 1.05;
+    utterance.pitch = 0.95; // Slightly deeper for more "human" weight
     window.speechSynthesis.speak(utterance);
   };
 
   const startVoiceCall = () => {
     setView('voice-active');
     setCallDuration(0);
-    timerInstanceRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
+    setVoiceState('thinking'); // Show calling state
     
-    // Initialize continuous listener ONCE
-    startContinuousListener();
+    // Start Ringing Sounds
+    let rings = 0;
+    const ringInterval = setInterval(() => {
+      playToneNotification('ring');
+      rings++;
+      if (rings >= 2) {
+        clearInterval(ringInterval);
+        playToneNotification('connect');
+        
+        timerInstanceRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
+        
+        // Initialize continuous listener
+        startContinuousListener();
 
-    // Natural delay for "Pickup"
-    setTimeout(() => {
-      playFiller('pickup');
-    }, 1200);
+        // Natural delay for "Pickup"
+        setTimeout(() => {
+          playFiller('pickup');
+        }, 800);
+      }
+    }, 1800);
   };
 
   const endVoiceCall = () => {

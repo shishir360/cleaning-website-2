@@ -88,10 +88,10 @@ function CinematicHero() {
               {/* Size select */}
               <LuxurySelect 
                 label="Home Size"
-                options={siteConfig.bookingLogic.sizeOptions}
+                options={(siteConfig as any).bookingLogic.sizeOptions}
                 value={homeSize}
                 onChange={setHomeSize}
-                placeholder={siteConfig.bookingLogic.sizeMultiplierLabel}
+                placeholder={(siteConfig as any).bookingLogic.sizeMultiplierLabel}
               />
 
               {/* Service select */}
@@ -319,7 +319,7 @@ function BeforeAfterSliderItem({ before, after, label, initial = 50, delay = 0, 
 }
 
 function BeforeAfterGallery() {
-  const g = siteConfig.socialProof.gallery;
+  const g = siteConfig.socialProof.workProof;
   return (
      <section className="py-16 sm:py-24 lg:py-32 bg-primary text-inverted overflow-hidden relative">
         <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-tertiary/10 rounded-full blur-[150px] -ml-96 -mt-96 pointer-events-none"></div>
@@ -332,16 +332,16 @@ function BeforeAfterGallery() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
              <BeforeAfterSliderItem 
-               before={g.beforeAfter1.before} 
-               after={g.beforeAfter1.after} 
-               label={g.beforeAfter1.label} 
+               before={g[0].before} 
+               after={g[0].after} 
+               label={g[0].label} 
                initial={50} 
                direction="left" 
              />
              <BeforeAfterSliderItem 
-               before={g.beforeAfter2.before} 
-               after={g.beforeAfter2.after} 
-               label={g.beforeAfter2.label} 
+               before={g[1].before} 
+               after={g[1].after} 
+               label={g[1].label} 
                initial={40} 
                delay={0.2} 
                direction="right" 
