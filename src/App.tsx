@@ -12,6 +12,7 @@ import ContactPage from './pages/ContactPage';
 import CareersPage from './pages/CareersPage';
 import ReviewsPage from './pages/ReviewsPage';
 import TeamPage from './pages/TeamPage';
+import TeamMemberProfilePage from './pages/TeamMemberProfilePage';
 import InteractiveDemoPage from './pages/InteractiveDemoPage';
 
 import ServiceAreasPage from './pages/ServiceAreasPage';
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="careers" element={<CareersPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="team" element={<TeamPage />} />
+          <Route path="team/:slug" element={<TeamMemberProfilePage />} />
           
           {/* Demo & Booking */}
           <Route path="demo" element={<InteractiveDemoPage />} />

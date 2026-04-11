@@ -118,10 +118,46 @@ export const siteConfig = {
       { id: "guarantee", title: "Done Right Promise", text: "We'll return to fix it at no cost." }
     ],
     team: [
-      { name: "Kaelen", role: "Master Artisan", img: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1000&auto=format&fit=crop", rating: "5.0" },
-      { name: "Soren", role: "Precision Specialist", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop", rating: "4.9" },
-      { name: "Elara", role: "Surface Expert", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop", rating: "5.0" },
-      { name: "Silas", role: "Deep Clean Lead", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop", rating: "4.8" },
+      { 
+        name: "Kaelen", 
+        slug: "kaelen",
+        role: "Master Artisan", 
+        img: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1000&auto=format&fit=crop", 
+        rating: "5.0",
+        experience: "12 Years",
+        specialties: ["Fine Marble Restoration", "Crystal Chandelier Care"],
+        bio: "With over a decade of experience in Manhattan's most exclusive penthouses, Kaelen approach cleaning as a form of architectural preservation."
+      },
+      { 
+        name: "Soren", 
+        slug: "soren",
+        role: "Precision Specialist", 
+        img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop", 
+        rating: "4.9",
+        experience: "8 Years",
+        specialties: ["Sanitary Engineering", "High-Tech Surface Guard"],
+        bio: "Soren specializes in clinical-grade sanitation combined with a meticulous eye for modern geometric spaces and high-tech environments."
+      },
+      { 
+        name: "Elara", 
+        slug: "elara",
+        role: "Surface Expert", 
+        img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop", 
+        rating: "5.0",
+        experience: "9 Years",
+        specialties: ["Rare Fabric Care", "Antique Wood Polish"],
+        bio: "An expert in delicate materials, Elara ensures that heritage furniture and museum-grade collections receive the precise care they deserve."
+      },
+      { 
+        name: "Silas", 
+        slug: "silas",
+        role: "Deep Clean Lead", 
+        img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop", 
+        rating: "4.8",
+        experience: "15 Years",
+        specialties: ["Post-Construction Strategy", "Discreet Estate Ops"],
+        bio: "The veteran of our team, Silas manages complex transformations and ensures that every square inch of your property meets our uncompromising code."
+      },
     ],
     workProof: [
       {

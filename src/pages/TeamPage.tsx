@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { siteConfig } from '../config/siteConfig';
-import { Star, ShieldCheck, Heart, Award, Sparkles } from 'lucide-react';
+import { Star, ShieldCheck, Heart, Award, Sparkles, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { TiltCard } from '../components/ui/TiltCard';
 
 export default function TeamPage() {
@@ -104,9 +105,12 @@ export default function TeamPage() {
                       A dedicated specialist focused on delivering immaculate standards. Vetted through our 50-point background check for absolute peace of mind.
                     </p>
                     
-                    <button className="w-full py-4 bg-transparent border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/5 hover:text-white transition-all">
+                    <Link 
+                      to={`/team/${(member as any).slug}`}
+                      className="w-full inline-block py-4 bg-transparent border border-white/10 text-white/40 text-[10px] font-bold uppercase text-center tracking-[0.2em] rounded-xl hover:bg-white/5 hover:text-white transition-all"
+                    >
                       View Artisan Profile
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </TiltCard>
