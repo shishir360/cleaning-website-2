@@ -101,7 +101,10 @@ export default function UnifiedAgent() {
   const [callDuration, setCallDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isAgentSpeaking = useRef(false);
+  const isProcessingSpeech = useRef(false);
+  const timerRef.current = null;
+  const timerInstanceRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
   // ── Notification Logic ─────────────────────────────────────────────────────
@@ -203,21 +206,28 @@ export default function UnifiedAgent() {
   const startVoiceCall = () => {
     setView('voice-active');
     setCallDuration(0);
-    timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
+    timerInstanceRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
     
+    // Initialize continuous listener ONCE
+    startContinuousListener();
+
     // Natural delay for "Pickup"
     setTimeout(() => {
       playFiller('pickup');
-      // Give them a moment to respond after greeting
-      setTimeout(() => startListening(), 1500);
     }, 1200);
   };
 
   const endVoiceCall = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (recognitionRef.current) recognitionRef.current.stop();
+    if (timerInstanceRef.current) clearInterval(timerInstanceRef.current);
+    if (recognitionRef.current) {
+      recognitionRef.current.onend = null; // Prevent auto-restart
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     window.speechSynthesis.cancel();
-    voiceHistoryRef.current = []; // Clear memory on end call
+    voiceHistoryRef.current = [];
+    isAgentSpeaking.current = false;
+    isProcessingSpeech.current = false;
     setVoiceState('idle');
     setView('menu');
   };
@@ -225,36 +235,69 @@ export default function UnifiedAgent() {
   const speakVoice = (text: string, onEnd?: () => void) => {
     if (!window.speechSynthesis) return;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.onstart = () => setVoiceState('speaking');
-    utterance.onend = () => { setVoiceState('idle'); onEnd?.(); };
+    utterance.onstart = () => {
+      setVoiceState('speaking');
+      isAgentSpeaking.current = true;
+    };
+    utterance.onend = () => {
+      setVoiceState('idle');
+      isAgentSpeaking.current = false;
+      onEnd?.();
+    };
     window.speechSynthesis.speak(utterance);
   };
 
-  const startListening = () => {
-    if (!SpeechRecognition) return;
+  const startContinuousListener = () => {
+    if (!SpeechRecognition || recognitionRef.current) return;
+    
     const rec = new SpeechRecognition();
-    rec.continuous = false;
+    rec.continuous = true;
+    rec.interimResults = false;
     rec.lang = 'en-US';
+    
     rec.onstart = () => setVoiceState('listening');
+    
     rec.onresult = async (e: any) => {
-      const transcript = e.results[0][0].transcript;
-      setVoiceState('thinking');
-      // Immediate filler vocalization to bridge API lag
-      playFiller('thinking');
-      
-      const data = await callAgent(voiceHistoryRef.current, transcript, undefined, true);
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Hmm, I didn't quite catch that. Could you say it again?";
-      
-      // Update local memory
-      voiceHistoryRef.current.push(
-        { role: 'user', parts: [{ text: transcript }] },
-        { role: 'model', parts: [{ text: reply }] }
-      );
+      // If the agent is currently talking, ignore any microphone input (Echo Cancellation)
+      if (isAgentSpeaking.current || isProcessingSpeech.current) return;
 
-      speakVoice(reply, () => startListening());
+      const result = e.results[e.results.length - 1];
+      if (result.isFinal) {
+        const transcript = result[0].transcript.trim();
+        if (transcript.length < 2) return;
+
+        isProcessingSpeech.current = true;
+        setVoiceState('thinking');
+        playFiller('thinking');
+
+        try {
+          const data = await callAgent(voiceHistoryRef.current, transcript, undefined, true);
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Hmm, I didn't quite catch that. Could you say it again?";
+          
+          voiceHistoryRef.current.push(
+            { role: 'user', parts: [{ text: transcript }] },
+            { role: 'model', parts: [{ text: reply }] }
+          );
+
+          speakVoice(reply);
+        } catch {
+           speakVoice("Sorry, the line is a bit fuzzy. Can you repeat that?");
+        } finally {
+          isProcessingSpeech.current = false;
+        }
+      }
     };
-    rec.onerror = () => setVoiceState('idle');
-    rec.onend = () => { if (voiceState === 'listening') setVoiceState('idle'); };
+
+    rec.onerror = () => {
+      console.error("Speech Recognition Error");
+      setVoiceState('idle');
+    };
+    
+    rec.onend = () => {
+      // If the view is still active, restart silently if it stopped unexpectedly
+      if (view === 'voice-active') rec.start();
+    };
+
     recognitionRef.current = rec;
     rec.start();
   };
